@@ -4,12 +4,12 @@ import dat from 'dat-gui';
 import THREE from '../ThreeLight';
 import BinaryMaze from '../utils/BinaryMaze';
 // Skybox image imports //
-import xpos from '../../resources/images/maskonaive/posx.jpg';
-import xneg from '../../resources/images/maskonaive/negx.jpg';
-import ypos from '../../resources/images/maskonaive/posy.jpg';
-import yneg from '../../resources/images/maskonaive/negy.jpg';
-import zpos from '../../resources/images/maskonaive/posz.jpg';
-import zneg from '../../resources/images/maskonaive/negz.jpg';
+import xpos from '../../resources/images/vindelalven/posx.jpg';
+import xneg from '../../resources/images/vindelalven/negx.jpg';
+import ypos from '../../resources/images/vindelalven/posy.jpg';
+import yneg from '../../resources/images/vindelalven/negy.jpg';
+import zpos from '../../resources/images/vindelalven/posz.jpg';
+import zneg from '../../resources/images/vindelalven/negz.jpg';
 
 // Render Class Object //
 export default class Render {
@@ -18,7 +18,7 @@ export default class Render {
     this.mirror = 4;
     this.scale = 1.0;
     this.ratio = 1024;
-    this.size = 0.5;
+    this.size = 0.15;
     this.maze = new BinaryMaze();
     this.width = window.innerWidth;
     this.height = window.innerHeight;
@@ -27,7 +27,7 @@ export default class Render {
     this.cameraConfig = {
       position: [
         -0.61856619533,
-        -0.37075002657,
+        0.37075002657,
         -1.10822670381
       ],
       lookAt: [0, 1, 2],
@@ -45,12 +45,12 @@ export default class Render {
     this.splineObject = [];
     this.camPosition = {
       x: -1.61856619533,
-      y: -1.37075002657,
+      y: 1.37075002657,
       z: -1.10822670381
     };
     this.trsPosition = {
       x: -0.61856619533,
-      y: -0.37075002657,
+      y: 0.37075002657,
       z: -1.10822670381
     };
     this.camTimeoutx = true;
@@ -122,8 +122,8 @@ export default class Render {
     document.body.appendChild(this.renderer.domElement);
 
     this.scene = new THREE.Scene();
-    this.bufferScene = new THREE.Scene();
-
+    this.scene.fog = new THREE.FogExp2(0x000000, 0.275);
+  
     this.camera = new THREE.PerspectiveCamera(
         this.cameraConfig.viewAngle,
         this.cameraConfig.aspect,
@@ -146,7 +146,7 @@ export default class Render {
     this.skybox.format = THREE.RGBFormat;
     // CubeReflectionMapping || CubeRefractionMapping//
     this.skybox.mapping = THREE.CubeReflectionMapping;
-    this.scene.background = this.skybox;
+    // this.scene.background = this.skybox;
   };
 
   getRandomVector = (a, b, c) => {
@@ -156,6 +156,17 @@ export default class Render {
     return {x, y, z};
   };
 
+  getMazeBlob = () => {
+    const mazeReturn = this.maze.generateMaze(45, 45);
+    const mazeWidth = this.maze.cc * this.size;
+    const mazeHeight = this.maze.cr * this.size;
+    return {
+      mazeReturn,
+      mazeWidth,
+      mazeHeight
+    };
+  };
+
   createScene = () => {
     // Create custom material for the shader
     this.metalMaterial = new THREE.MeshBasicMaterial({
@@ -163,17 +174,24 @@ export default class Render {
       side: THREE.DoubleSide
     });
 
-    this.mazeReturn = this.maze.generateMaze(8, 8);
-    this.mazeWidth = this.maze.cc * this.size;
-    this.mazeHeight = this.maze.cr * this.size;
-    
-    console.log(this.mazeReturn);
-    for (let d = 0; d < this.mazeReturn.length; d += 1) {
-      const x = d % this.maze.cc;
-      const y = ~~((d - x) / this.maze.cc);
-      if (this.mazeReturn[d] === 1) {
-        this.drawCube({ x, y });
+    let mve = 0;
+    for (let v = 0; v < 1; v += 1) {
+
+      const blob = this.getMazeBlob();
+      this.mazeWidth = blob.mazeWidth;
+      this.mazeHeight = blob.mazeHeight;
+
+      console.log(blob.mazeReturn);
+
+      for (let d = 0; d < blob.mazeReturn.length; d += 1) {
+        const x = d % this.maze.cc;
+        const y = ~~((d - x) / this.maze.cc);
+        const z = mve;
+        if (blob.mazeReturn[d] === 1) {
+          this.drawCube({ x, y, z });
+        }
       }
+      mve += this.size * 2;
     }
   };
 
@@ -192,7 +210,7 @@ export default class Render {
     );
     object.position.set(
       xOffset + point.x * size,
-      0.75,
+      -0.15 + point.z,
       yOffset + point.y * size
     );
     this.scene.add(object);
@@ -210,7 +228,7 @@ export default class Render {
     this.camera.lookAt(new THREE.Vector3(0, 0, 0));
 
     if(!this.camTimeoutx && Math.random() * 255 > 254) {
-      this.trsPosition.x = this.cameraRange();
+      this.trsPosition.x = (2.5 - Math.random() * 5);
       this.camTimeoutx = true;
       setTimeout(
         () => { this.camTimeoutx = false; },
@@ -218,7 +236,7 @@ export default class Render {
       );
     }
     if(!this.camTimeouty && Math.random() * 255 > 254) {
-      this.trsPosition.y = this.cameraRange();
+      this.trsPosition.y = 0.5 + (Math.random() * 2.5);
       this.camTimeouty = true;
       setTimeout(
         () => { this.camTimeouty = false; },
@@ -226,7 +244,7 @@ export default class Render {
       );
     }
     if(!this.camTimeoutz && Math.random() * 255 > 254) {
-      this.trsPosition.z = this.cameraRange();
+      this.trsPosition.z = (2.5 - Math.random() * 5);
       this.camTimeoutz = true;
       setTimeout(
         () => { this.camTimeoutz = false; },
