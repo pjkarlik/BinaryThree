@@ -1,15 +1,15 @@
-// require('../shaders/BWPhaseFragment');
-//require('./shaders/WaveBowFragment');
 import dat from 'dat-gui';
-import THREE from '../ThreeLight';
+import THREE from '../Three';
 import BinaryMaze from '../utils/BinaryMaze';
 // Skybox image imports //
-import xpos from '../../resources/images/buddha/posx.jpg';
-import xneg from '../../resources/images/buddha/negx.jpg';
-import ypos from '../../resources/images/buddha/posy.jpg';
-import yneg from '../../resources/images/buddha/negy.jpg';
-import zpos from '../../resources/images/buddha/posz.jpg';
-import zneg from '../../resources/images/buddha/negz.jpg';
+import xpos from '../../resources/images/yokohama2/posx.jpg';
+import xneg from '../../resources/images/yokohama2/negx.jpg';
+import ypos from '../../resources/images/yokohama2/posy.jpg';
+import yneg from '../../resources/images/yokohama2/negy.jpg';
+import zpos from '../../resources/images/yokohama2/posz.jpg';
+import zneg from '../../resources/images/yokohama2/negz.jpg';
+import stone from '../../resources/images/matallo.jpg';
+import bmp from '../../resources/images/matallo_bmp.jpg';
 
 // Render Class Object //
 export default class Render {
@@ -26,9 +26,9 @@ export default class Render {
     // Configurations //
     this.cameraConfig = {
       position: [
-        -0.61856619533,
-        0.37075002657,
-        -1.10822670381
+        -0.5,
+        0.5,
+        -1.0
       ],
       lookAt: [0, 1, 2],
       aspect: this.width / this.height,
@@ -44,14 +44,14 @@ export default class Render {
     this.adef = 360 / this.amount + 1;
     this.splineObject = [];
     this.camPosition = {
-      x: -1.61856619533,
-      y: 1.37075002657,
-      z: -1.10822670381
+      x: -1.5,
+      y: 0.06,
+      z: -1.0
     };
     this.trsPosition = {
-      x: -0.61856619533,
-      y: 0.37075002657,
-      z: -1.10822670381
+      x: -0.5,
+      y: 0.06,
+      z: -1.0
     };
     this.camTimeoutx = true;
     this.camTimeouty = true;
@@ -69,6 +69,7 @@ export default class Render {
       console.log(this.camera.position);
     }, true);
     this.init();
+    // this.setEffects();
     // this.createGUI();
     this.createScene();
     this.renderLoop();
@@ -122,7 +123,7 @@ export default class Render {
     document.body.appendChild(this.renderer.domElement);
 
     this.scene = new THREE.Scene();
-    this.scene.fog = new THREE.FogExp2(0x000000, 0.275);
+    this.scene.fog = new THREE.FogExp2(0x000000, 0.875);
   
     this.camera = new THREE.PerspectiveCamera(
         this.cameraConfig.viewAngle,
@@ -149,6 +150,30 @@ export default class Render {
     // this.scene.background = this.skybox;
   };
 
+  setEffects = () => {
+    let effect;
+    // this.effect = new THREE.AnaglyphEffect(this.renderer);
+    // this.effect.setSize(this.width, this.height);
+    this.composer = new THREE.EffectComposer(this.renderer);
+    this.composer.addPass(new THREE.RenderPass(this.scene, this.camera));
+
+    // effect = new THREE.ShaderPass(THREE.MirrorShader);
+    // effect.uniforms.side.value = 1;
+    // this.composer.addPass(effect);
+
+    // effect = new THREE.FilmPass(0.9, 0.9, 1000, true);
+    // this.composer.addPass(effect);
+
+    // effect = new THREE.ShaderPass(THREE.DotScreenShader);
+    // effect.uniforms.scale.value = 1.75;
+    // this.composer.addPass(effect);
+
+    effect = new THREE.ShaderPass(THREE.RGBShiftShader);
+    effect.uniforms.amount.value = 0.001;
+    effect.uniforms.angle.value = 0.0;
+    effect.renderToScreen = true;
+    this.composer.addPass(effect);
+  };
   getRandomVector = (a, b, c) => {
     const x = (a || 0.0) + (10 - Math.random() * 20);
     const y = (b || 0.0) + (15 - Math.random() * 30);
@@ -157,7 +182,7 @@ export default class Render {
   };
 
   getMazeBlob = () => {
-    const mazeReturn = this.maze.generateMaze(35, 35);
+    const mazeReturn = this.maze.generateMaze(15, 15);
     const mazeWidth = this.maze.cc * this.size;
     const mazeHeight = this.maze.cr * this.size;
     return {
@@ -170,12 +195,33 @@ export default class Render {
   createScene = () => {
     // Create custom material for the shader
     this.metalMaterial = new THREE.MeshBasicMaterial({
-      envMap: this.skybox,
-      side: THREE.DoubleSide
+      // color: 0x999999
+      envMap: this.skybox
+      // side: THREE.DoubleSide
+    });
+    // other material //
+    const texloader = new THREE.TextureLoader();
+    const texture = texloader.load(stone, () => {
+      texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+      texture.offset.set(0, 0);
+      texture.repeat.set(1, 1);
+    });
+    const bmpMap = texloader.load(bmp, () => {
+      bmpMap.wrapS = bmpMap.wrapT = THREE.RepeatWrapping;
+      texture.offset.set(0, 0);
+      texture.repeat.set(1, 1);
+    });
+    this.boxMaterial = new THREE.MeshPhongMaterial({
+      map: texture,
+      side: THREE.DoubleSide,
+      bumpMap: bmpMap,
+      bumpScale: 0.95,
     });
 
+
+    // end material //
     let mve = 0;
-    for (let v = 0; v < 1; v += 1) {
+    for (let v = 0; v < 4; v += 1) {
 
       const blob = this.getMazeBlob();
       this.mazeWidth = blob.mazeWidth;
@@ -184,7 +230,7 @@ export default class Render {
       for (let d = 0; d < blob.mazeReturn.length; d += 1) {
         const x = d % this.maze.cc;
         const y = ~~((d - x) / this.maze.cc);
-        const z = mve;
+        const z = mve - 0.4;
         if (blob.mazeReturn[d] === 1) {
           this.drawCube({ x, y, z });
         }
@@ -199,12 +245,12 @@ export default class Render {
     const yOffset = ~~(0 - this.mazeHeight / 2);
 
     const object = new THREE.Mesh(
-      new THREE.CubeGeometry(
+      new THREE.BoxGeometry(
         size,
         size,
         size
       ),
-      this.metalMaterial,
+      this.boxMaterial,
     );
     object.position.set(
       xOffset + point.x * size,
@@ -215,9 +261,9 @@ export default class Render {
   };
 
   cameraLoop = () => {
-    this.camPosition.x = this.camPosition.x - (this.camPosition.x - this.trsPosition.x) * 0.01;
-    this.camPosition.y = this.camPosition.y - (this.camPosition.y - this.trsPosition.y) * 0.01;
-    this.camPosition.z = this.camPosition.z - (this.camPosition.z - this.trsPosition.z) * 0.01;
+    this.camPosition.x = this.camPosition.x - (this.camPosition.x - this.trsPosition.x) * 0.02;
+    this.camPosition.y = this.camPosition.y - (this.camPosition.y - this.trsPosition.y) * 0.02;
+    this.camPosition.z = this.camPosition.z - (this.camPosition.z - this.trsPosition.z) * 0.02;
     this.camera.position.set(
       this.camPosition.x,
       this.camPosition.y,
@@ -233,14 +279,14 @@ export default class Render {
         3000
       );
     }
-    if(!this.camTimeouty && Math.random() * 255 > 254) {
-      this.trsPosition.y = 0.5 + (Math.random() * 2.5);
-      this.camTimeouty = true;
-      setTimeout(
-        () => { this.camTimeouty = false; },
-        3000
-      );
-    }
+    // if(!this.camTimeouty && Math.random() * 255 > 254) {
+    //   this.trsPosition.y = 0.5 + (Math.random() * 2.5);
+    //   this.camTimeouty = true;
+    //   setTimeout(
+    //     () => { this.camTimeouty = false; },
+    //     3000
+    //   );
+    // }
     if(!this.camTimeoutz && Math.random() * 255 > 254) {
       this.trsPosition.z = (2.5 - Math.random() * 5);
       this.camTimeoutz = true;

@@ -1,8 +1,10 @@
-// require('../shaders/BWPhaseFragment');
-//require('./shaders/WaveBowFragment');
 import dat from 'dat-gui';
 import THREE from '../ThreeLight';
 import BinaryMaze from '../utils/BinaryMaze';
+// fragment shaders //
+import fragmentShader from '../shaders/position/fragmentShader';
+import vertexShader from '../shaders/position/vertexShader';
+
 // Skybox image imports //
 import xpos from '../../resources/images/buddha/posx.jpg';
 import xneg from '../../resources/images/buddha/negx.jpg';
@@ -14,11 +16,18 @@ import zneg from '../../resources/images/buddha/negz.jpg';
 // Render Class Object //
 export default class Render {
   constructor() {
+    // basic stuff //
     this.frames = 0;
     this.mirror = 4;
     this.scale = 1.0;
     this.ratio = 1024;
     this.size = 0.2;
+    // shader stuff //
+    this.start = Date.now();
+    this.angle = 255.0;
+    this.dec = 68.0;
+    this.vector = { x: 512, y: 512 };
+    // maze stuff //
     this.maze = new BinaryMaze();
     this.width = window.innerWidth;
     this.height = window.innerHeight;
@@ -122,7 +131,7 @@ export default class Render {
     document.body.appendChild(this.renderer.domElement);
 
     this.scene = new THREE.Scene();
-    this.scene.fog = new THREE.FogExp2(0x000000, 0.275);
+    // this.scene.fog = new THREE.FogExp2(0x000000, 0.275);
   
     this.camera = new THREE.PerspectiveCamera(
         this.cameraConfig.viewAngle,
@@ -157,7 +166,7 @@ export default class Render {
   };
 
   getMazeBlob = () => {
-    const mazeReturn = this.maze.generateMaze(35, 35);
+    const mazeReturn = this.maze.generateMaze(5, 5);
     const mazeWidth = this.maze.cc * this.size;
     const mazeHeight = this.maze.cr * this.size;
     return {
@@ -168,14 +177,50 @@ export default class Render {
   };
 
   createScene = () => {
-    // Create custom material for the shader
-    this.metalMaterial = new THREE.MeshBasicMaterial({
-      envMap: this.skybox,
+    /* eslint no-multi-assign: 0 */
+    const uniforms = THREE.UniformsUtils.merge([
+      THREE.UniformsLib.lights,
+      THREE.UniformsLib.shadowmap,
+      {
+        map: {
+          type: 't',
+          value: 1,
+          texture: null,
+        },
+        time: {
+          type: 'f',
+          value: this.start,
+        },
+        angle: {
+          type: 'f',
+          value: this.angle,
+        },
+        dec: {
+          type: 'f',
+          value: this.dec,
+        },
+        resolution: {
+          type: 'v2',
+          value: new THREE.Vector3(),
+        },
+      },
+    ]);
+
+    this.meshMaterial = new THREE.ShaderMaterial({
+      uniforms,
+      vertexShader,
+      fragmentShader,
+      transparent: true,
       side: THREE.DoubleSide
     });
+    // Create custom material for the shader
+    // this.metalMaterial = new THREE.MeshBasicMaterial({
+    //   envMap: this.skybox,
+    //   side: THREE.DoubleSide
+    // });
 
     let mve = 0;
-    for (let v = 0; v < 1; v += 1) {
+    for (let v = 0; v < 3; v += 1) {
 
       const blob = this.getMazeBlob();
       this.mazeWidth = blob.mazeWidth;
@@ -204,7 +249,7 @@ export default class Render {
         size,
         size
       ),
-      this.metalMaterial,
+      this.meshMaterial,
     );
     object.position.set(
       xOffset + point.x * size,
@@ -269,6 +314,10 @@ export default class Render {
     this.renderScene();
     this.cameraLoop();
     this.frames += 0.5;
+    const timeNow = (Date.now() - this.start) / 1000;
+    this.meshMaterial.uniforms.time.value = timeNow;
+    this.meshMaterial.uniforms.dec.value = 32.0;
+    this.meshMaterial.uniforms.needsUpdate = true;
 
     window.requestAnimationFrame(this.renderLoop.bind(this));
   };
