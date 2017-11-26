@@ -8,8 +8,8 @@ import ypos from '../../resources/images/yokohama2/posy.jpg';
 import yneg from '../../resources/images/yokohama2/negy.jpg';
 import zpos from '../../resources/images/yokohama2/posz.jpg';
 import zneg from '../../resources/images/yokohama2/negz.jpg';
-import stone from '../../resources/images/matallo.jpg';
-import bmp from '../../resources/images/matallo_bmp.jpg';
+import stone from '../../resources/images/grate_t.png';
+import bmp from '../../resources/images/grate_bmp.jpg';
 
 // Render Class Object //
 export default class Render {
@@ -23,6 +23,7 @@ export default class Render {
     this.width = window.innerWidth;
     this.height = window.innerHeight;
     this.devicePixelRatio = window.devicePixelRatio;
+    this.background = 0x000000;
     // Configurations //
     this.cameraConfig = {
       position: [
@@ -33,7 +34,7 @@ export default class Render {
       lookAt: [0, 1, 2],
       aspect: this.width / this.height,
       viewAngle: 85,
-      near: 0.1,
+      near: 0.08,
       far: 20000
     };
     this.controlConfig = {
@@ -50,9 +51,16 @@ export default class Render {
     };
     this.trsPosition = {
       x: -0.5,
-      y: 0.06,
+      y: this.camPosition.y,
       z: -1.0
     };
+    this.levelMap = [
+      1.0,
+      0.46,
+      0.06,
+      -0.36,
+      -0.8
+    ];
     this.camTimeoutx = true;
     this.camTimeouty = true;
     this.camTimeoutz = true;
@@ -123,8 +131,8 @@ export default class Render {
     document.body.appendChild(this.renderer.domElement);
 
     this.scene = new THREE.Scene();
-    this.scene.fog = new THREE.FogExp2(0x000000, 0.875);
-  
+    this.scene.fog = new THREE.FogExp2(this.background, 0.875);
+    this.scene.background = new THREE.Color(this.background);
     this.camera = new THREE.PerspectiveCamera(
         this.cameraConfig.viewAngle,
         this.cameraConfig.aspect,
@@ -215,6 +223,7 @@ export default class Render {
       map: texture,
       side: THREE.DoubleSide,
       bumpMap: bmpMap,
+      transparent: true,
       bumpScale: 0.95,
     });
 
@@ -244,12 +253,15 @@ export default class Render {
     const xOffset = ~~(0 - this.mazeWidth / 2);
     const yOffset = ~~(0 - this.mazeHeight / 2);
 
+    const geometry = new THREE.BoxGeometry(
+      size,
+      size,
+      size
+    );
+
+    // geometry.computeVertexNormals();
     const object = new THREE.Mesh(
-      new THREE.BoxGeometry(
-        size,
-        size,
-        size
-      ),
+      geometry,
       this.boxMaterial,
     );
     object.position.set(
@@ -261,8 +273,8 @@ export default class Render {
   };
 
   cameraLoop = () => {
-    this.camPosition.x = this.camPosition.x - (this.camPosition.x - this.trsPosition.x) * 0.02;
-    this.camPosition.y = this.camPosition.y - (this.camPosition.y - this.trsPosition.y) * 0.02;
+    this.camPosition.x = this.camPosition.x - (this.camPosition.x - this.trsPosition.x) * 0.01;
+    this.camPosition.y = this.camPosition.y - (this.camPosition.y - this.trsPosition.y) * 0.09;
     this.camPosition.z = this.camPosition.z - (this.camPosition.z - this.trsPosition.z) * 0.02;
     this.camera.position.set(
       this.camPosition.x,
@@ -279,14 +291,16 @@ export default class Render {
         3000
       );
     }
-    // if(!this.camTimeouty && Math.random() * 255 > 254) {
-    //   this.trsPosition.y = 0.5 + (Math.random() * 2.5);
-    //   this.camTimeouty = true;
-    //   setTimeout(
-    //     () => { this.camTimeouty = false; },
-    //     3000
-    //   );
-    // }
+    if(!this.camTimeouty && Math.random() * 255 > 254) {
+      const level = Math.floor(Math.random() * 4);
+      console.log(level);
+      this.trsPosition.y = this.levelMap[level];
+      this.camTimeouty = true;
+      setTimeout(
+        () => { this.camTimeouty = false; },
+        3000
+      );
+    }
     if(!this.camTimeoutz && Math.random() * 255 > 254) {
       this.trsPosition.z = (2.5 - Math.random() * 5);
       this.camTimeoutz = true;
