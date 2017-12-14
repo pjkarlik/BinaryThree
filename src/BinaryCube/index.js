@@ -1,40 +1,47 @@
+// require('../shaders/BWPhaseFragment');
+//require('./shaders/WaveBowFragment');
 import dat from 'dat-gui';
-import THREE from '../Three';
-import BinaryMaze from '../utils/BinaryMaze';
+import THREE from '../ThreeLight';
+import BinaryMaze from '../utils/BinaryCube';
 // Skybox image imports //
-import xpos from '../../resources/images/yokohama2/posx.jpg';
-import xneg from '../../resources/images/yokohama2/negx.jpg';
-import ypos from '../../resources/images/yokohama2/posy.jpg';
-import yneg from '../../resources/images/yokohama2/negy.jpg';
-import zpos from '../../resources/images/yokohama2/posz.jpg';
-import zneg from '../../resources/images/yokohama2/negz.jpg';
-import stone from '../../resources/images/grate_t.png';
-import bmp from '../../resources/images/grate_bmp.jpg';
+import xpos from '../../resources/images/buddha/posx.jpg';
+import xneg from '../../resources/images/buddha/negx.jpg';
+import ypos from '../../resources/images/buddha/posy.jpg';
+import yneg from '../../resources/images/buddha/negy.jpg';
+import zpos from '../../resources/images/buddha/posz.jpg';
+import zneg from '../../resources/images/buddha/negz.jpg';
+
+import stone from '../../resources/images/matallo.jpg';
+import bmp from '../../resources/images/matallo_bmp.jpg';
 
 // Render Class Object //
 export default class Render {
   constructor() {
     this.frames = 0;
     this.mirror = 4;
-    this.scale = 1.0;
+    this.scale = 0.5;
     this.ratio = 1024;
     this.size = 0.2;
+    this.dim = {
+      row: 11,
+      col: 11,
+      dep: 1
+    };
     this.maze = new BinaryMaze();
     this.width = window.innerWidth;
     this.height = window.innerHeight;
     this.devicePixelRatio = window.devicePixelRatio;
-    this.background = 0x000000;
     // Configurations //
     this.cameraConfig = {
       position: [
-        -0.5,
-        0.5,
-        -1.0
+        -0.61856619533,
+        0.37075002657,
+        -1.10822670381
       ],
       lookAt: [0, 1, 2],
       aspect: this.width / this.height,
       viewAngle: 85,
-      near: 0.08,
+      near: 0.1,
       far: 20000
     };
     this.controlConfig = {
@@ -46,7 +53,7 @@ export default class Render {
     this.splineObject = [];
     this.camPosition = {
       x: -1.5,
-      y: 0.06,
+      y: 1.0,
       z: -1.0
     };
     this.trsPosition = {
@@ -73,11 +80,10 @@ export default class Render {
       1000
     );
     window.addEventListener('resize', this.resize, true);
-    // window.addEventListener('click', () => {
-    //   console.log(this.camera.position);
-    // }, true);
+    window.addEventListener('click', () => {
+      console.log(this.camera.position);
+    }, true);
     this.init();
-    this.setEffects();
     // this.createGUI();
     this.createScene();
     this.renderLoop();
@@ -131,8 +137,8 @@ export default class Render {
     document.body.appendChild(this.renderer.domElement);
 
     this.scene = new THREE.Scene();
-    this.scene.fog = new THREE.FogExp2(this.background, 0.875);
-    this.scene.background = new THREE.Color(this.background);
+    this.scene.fog = new THREE.FogExp2(0x000000, 0.55);
+  
     this.camera = new THREE.PerspectiveCamera(
         this.cameraConfig.viewAngle,
         this.cameraConfig.aspect,
@@ -158,30 +164,6 @@ export default class Render {
     // this.scene.background = this.skybox;
   };
 
-  setEffects = () => {
-    let effect;
-    this.effect = new THREE.AnaglyphEffect(this.renderer);
-    this.effect.setSize(this.width, this.height);
-    // this.composer = new THREE.EffectComposer(this.renderer);
-    // this.composer.addPass(new THREE.RenderPass(this.scene, this.camera));
-
-    // effect = new THREE.ShaderPass(THREE.MirrorShader);
-    // effect.uniforms.side.value = 1;
-    // this.composer.addPass(effect);
-
-    // effect = new THREE.FilmPass(0.9, 0.9, 1000, true);
-    // this.composer.addPass(effect);
-
-    // effect = new THREE.ShaderPass(THREE.DotScreenShader);
-    // effect.uniforms.scale.value = 1.75;
-    // this.composer.addPass(effect);
-
-    // effect = new THREE.ShaderPass(THREE.RGBShiftShader);
-    // effect.uniforms.amount.value = 0.001;
-    // effect.uniforms.angle.value = 0.0;
-    // effect.renderToScreen = true;
-    // this.composer.addPass(effect);
-  };
   getRandomVector = (a, b, c) => {
     const x = (a || 0.0) + (10 - Math.random() * 20);
     const y = (b || 0.0) + (15 - Math.random() * 30);
@@ -190,7 +172,10 @@ export default class Render {
   };
 
   getMazeBlob = () => {
-    const mazeReturn = this.maze.generateMaze(15, 15);
+    const x = this.dim.col;
+    const y = this.dim.row;
+    const z = this.dim.dep;
+    const mazeReturn = this.maze.generateMaze(x, y, z);
     const mazeWidth = this.maze.cc * this.size;
     const mazeHeight = this.maze.cr * this.size;
     return {
@@ -203,9 +188,8 @@ export default class Render {
   createScene = () => {
     // Create custom material for the shader
     this.metalMaterial = new THREE.MeshBasicMaterial({
-      // color: 0x999999
-      envMap: this.skybox
-      // side: THREE.DoubleSide
+      envMap: this.skybox,
+      side: THREE.DoubleSide
     });
     // other material //
     const texloader = new THREE.TextureLoader();
@@ -227,10 +211,8 @@ export default class Render {
       bumpScale: 0.95,
     });
 
-
-    // end material //
     let mve = 0;
-    for (let v = 0; v < 4; v += 1) {
+    for (let v = 0; v < 1; v += 1) {
 
       const blob = this.getMazeBlob();
       this.mazeWidth = blob.mazeWidth;
@@ -239,7 +221,7 @@ export default class Render {
       for (let d = 0; d < blob.mazeReturn.length; d += 1) {
         const x = d % this.maze.cc;
         const y = ~~((d - x) / this.maze.cc);
-        const z = mve - 0.4;
+        const z = mve;
         if (blob.mazeReturn[d] === 1) {
           this.drawCube({ x, y, z });
         }
@@ -253,15 +235,12 @@ export default class Render {
     const xOffset = ~~(0 - this.mazeWidth / 2);
     const yOffset = ~~(0 - this.mazeHeight / 2);
 
-    const geometry = new THREE.BoxGeometry(
-      size,
-      size,
-      size
-    );
-
-    // geometry.computeVertexNormals();
     const object = new THREE.Mesh(
-      geometry,
+      new THREE.CubeGeometry(
+        size,
+        size,
+        size
+      ),
       this.boxMaterial,
     );
     object.position.set(
@@ -274,8 +253,8 @@ export default class Render {
 
   cameraLoop = () => {
     this.camPosition.x = this.camPosition.x - (this.camPosition.x - this.trsPosition.x) * 0.01;
-    this.camPosition.y = this.camPosition.y - (this.camPosition.y - this.trsPosition.y) * 0.09;
-    this.camPosition.z = this.camPosition.z - (this.camPosition.z - this.trsPosition.z) * 0.02;
+    this.camPosition.y = this.camPosition.y - (this.camPosition.y - this.trsPosition.y) * 0.01;
+    this.camPosition.z = this.camPosition.z - (this.camPosition.z - this.trsPosition.z) * 0.01;
     this.camera.position.set(
       this.camPosition.x,
       this.camPosition.y,
@@ -283,7 +262,7 @@ export default class Render {
     );
     this.camera.lookAt(new THREE.Vector3(0, 0, 0));
 
-    if(!this.camTimeoutx && Math.random() * 255 > 252) {
+    if(!this.camTimeoutx && Math.random() * 255 > 253) {
       this.trsPosition.x = (2.5 - Math.random() * 5);
       this.camTimeoutx = true;
       setTimeout(
@@ -291,8 +270,9 @@ export default class Render {
         3000
       );
     }
-    if(!this.camTimeouty && Math.random() * 255 > 253) {
+    if(!this.camTimeouty && Math.random() * 255 > 254) {
       const level = Math.floor(Math.random() * 4);
+      console.log(level);
       this.trsPosition.y = this.levelMap[level];
       this.camTimeouty = true;
       setTimeout(
@@ -300,7 +280,7 @@ export default class Render {
         3000
       );
     }
-    if(!this.camTimeoutz && Math.random() * 255 > 252) {
+    if(!this.camTimeoutz && Math.random() * 255 > 253) {
       this.trsPosition.z = (2.5 - Math.random() * 5);
       this.camTimeoutz = true;
       setTimeout(
@@ -318,7 +298,6 @@ export default class Render {
     // Core three Render call //
     // this.composer.render();
     this.renderer.render(this.scene, this.camera);
-    // this.effect.render(this.scene, this.camera);
   };
 
   renderLoop = () => {
