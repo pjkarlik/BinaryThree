@@ -33,19 +33,19 @@ THREE.RenderFragment = {
 
         "uv.x = r * cos(phi) + 0.5;",
         "uv.y = r * sin(phi) + 0.5;",
-        "vec4 color = texture2D( text0, uv);",
-
+				"vec4 color = texture2D( text0, uv);",
+				
         "float Dist = sqrt((q.x - 0.5) * (q.x - 0.5) + (q.y - 0.5) * (q.y - 0.5));",
 				"float average = ( color.r + color.g + color.b ) / 3.0;",
 
   			"gl_FragColor = vec4(",
         // "average,average,average,",
-          // "color.r,",
-          // "color.g,",
-          // "color.b,",
-					"sin(color.r * 10.0 - 5.0) / Dist,",
-					"sin(color.g * 10.0 - 5.0) / Dist, ",
-					"sin(color.b * 10.0 - 5.0) / Dist,",
+          "color.r,",
+          "color.g,",
+          "color.b,",
+					// "sin(color.r * 10.0 - 5.0) / Dist,",
+					// "sin(color.g * 10.0 - 5.0) / Dist, ",
+					// "sin(color.b * 10.0 - 5.0) / Dist,",
 					"color.a",
 				");",
   		"}"
