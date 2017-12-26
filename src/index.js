@@ -1,4 +1,4 @@
-import Render from './FishEye/index2';
+import Render from './DistortFragment/index03';
 import { description, version } from '../version.json';
 
 require('../resources/styles/styles.css');
