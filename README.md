@@ -5,7 +5,7 @@
 
 ![BinaryThree](./splash.png)
 
-  xxx.
+  Working repo for Maze development using THREE.js and Binary Tree Mazes. Basic concepts and experiments in motion and interaction - WIP repo use at your own risk.
 
   ```
   import * as THREE from 'three'; // build/three.js from node_module/three
