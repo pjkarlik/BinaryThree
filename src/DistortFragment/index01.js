@@ -1,7 +1,7 @@
 import dat from 'dat-gui';
 import THREE from '../Three';
 import BinaryMaze from '../utils/BinaryMaze';
-require('../shaders/DistortEyeFragment.js');
+require('../shaders/Dst01Fg.js');
 
 // Skybox image imports //
 import xpos from '../../resources/images/yokohama2/posx.jpg';
@@ -18,8 +18,6 @@ export default class Render {
   constructor() {
     this.frames = 0;
     this.mirror = 4;
-    this.scale = 10.0;
-    this.ratio = 1.0;
     this.size = 0.2;
     this.maze = new BinaryMaze();
     this.width = window.innerWidth;
@@ -80,7 +78,6 @@ export default class Render {
     // }, true);
     this.init();
     this.setEffects();
-    this.createGUI();
     this.createScene();
     this.renderLoop();
 
@@ -95,39 +92,6 @@ export default class Render {
     this.height = window.innerHeight;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(this.width, this.height);
-  };
-
-  createGUI = () => {
-    this.options = {
-      scale: this.scale,
-      ratio: this.ratio,
-      // mirror: this.mirror
-    };
-    this.gui = new dat.GUI();
-
-    const folderRender = this.gui.addFolder('Render Options');
-    // folderRender.add(this.options, 'mirror', 0, 4).step(1)
-    //   .onFinishChange((value) => {
-    //     this.mirror = value;
-    //     this.setOptions();
-    //   });
-    folderRender.add(this.options, 'scale', 1, 240).step(0.1)
-      .onFinishChange((value) => {
-        this.scale = value;
-        this.setOptions();
-      });
-    folderRender.add(this.options, 'ratio', 0, 100).step(0.1)
-      .onFinishChange((value) => {
-        this.ratio = value;
-        this.setOptions();
-      });
-    folderRender.open();
-  };
-
-  setOptions() {
-    // this.effect.uniforms.side.value = this.mirror;
-    this.rfrag.uniforms.scale.value = this.scale;
-    this.rfrag.uniforms.ratio.value = this.ratio;
   };
 
   init = () => {
@@ -179,7 +143,7 @@ export default class Render {
     this.composer.addPass(this.effect);
 
     this.rfrag = new THREE.ShaderPass(THREE.RenderFragment);
-    this.rfrag.uniforms.scale.value = this.scale;
+    // this.rfrag.uniforms.scale.value = this.scale;
     this.rfrag.renderToScreen = true;
     this.composer.addPass(this.rfrag);
 
@@ -328,7 +292,6 @@ export default class Render {
     if (this.frames % 1 === 0) {
       // some function here for throttling
     }
-    this.rfrag.uniforms.frames.value = this.frames;
     this.renderScene();
     this.cameraLoop();
     this.frames += 0.01;

@@ -1,7 +1,7 @@
 import dat from 'dat-gui';
 import THREE from '../Three';
 import BinaryMaze from '../utils/BinaryMaze';
-require('../shaders/Dst01Fg.js');
+require('../shaders/Dst04Fg.js');
 
 // Skybox image imports //
 import xpos from '../../resources/images/yokohama2/posx.jpg';
@@ -82,9 +82,9 @@ export default class Render {
     this.renderLoop();
 
     // fix fisheye render on dom element //
-    document.getElementsByTagName('canvas')[0].style.borderRadius='50%';
-    document.getElementsByTagName('canvas')[0].style.overflow='hidden';
-    document.getElementsByTagName('canvas')[0].style.background='#000';
+    // document.getElementsByTagName('canvas')[0].style.borderRadius='50%';
+    // document.getElementsByTagName('canvas')[0].style.overflow='hidden';
+    // document.getElementsByTagName('canvas')[0].style.background='#000';
   }
 
   resize = () => {
@@ -289,13 +289,12 @@ export default class Render {
   };
 
   renderLoop = () => {
-    if (this.frames % 1 === 0) {
-      // some function here for throttling
+    if (this.frames % 2 === 0) {
+ 
     }
     this.renderScene();
     this.cameraLoop();
-    this.frames += 0.01;
-
+    this.frames++;
     window.requestAnimationFrame(this.renderLoop.bind(this));
   };
 }

@@ -8,7 +8,8 @@ import ypos from '../../resources/images/yokohama2/posy.jpg';
 import yneg from '../../resources/images/yokohama2/negy.jpg';
 import zpos from '../../resources/images/yokohama2/posz.jpg';
 import zneg from '../../resources/images/yokohama2/negz.jpg';
-import stone from '../../resources/images/grate_t.png';
+// import stone from '../../resources/images/grate_t.png';
+import stone from '../../resources/images/grateframe.png';
 import bmp from '../../resources/images/grate_bmp.jpg';
 
 // Render Class Object //

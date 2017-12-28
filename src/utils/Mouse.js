@@ -11,16 +11,7 @@ export default class Mouse {
       this.element.addEventListener(eventName, this.getCoordinates);
     });
   }
-  reset = () => {
-    this.x = ~~(document.documentElement.clientWidth, window.innerWidth || 0) / 2;
-    this.y = ~~(document.documentElement.clientHeight, window.innerHeight || 0) / 2;
-  };
-  logout = () => {
-    this.events = ['mouseenter', 'mousemove'];
-    this.events.forEach((eventName) => {
-      this.element.removeEventListener(eventName, this.getCoordinates);
-    });
-  }
+
   getCoordinates(event) {
     event.preventDefault();
     const x = event.pageX;
@@ -31,7 +22,7 @@ export default class Mouse {
   pointer() {
     return {
       x: this.x,
-      y: this.y,
+      y: this.y
     };
   }
 }
