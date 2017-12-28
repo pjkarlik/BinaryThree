@@ -1,6 +1,8 @@
 import dat from 'dat-gui';
 import THREE from '../Three';
 import BinaryMaze from '../utils/BinaryMaze';
+require('../shaders/Dst02Fg.js');
+
 // Skybox image imports //
 import xpos from '../../resources/images/yokohama2/posx.jpg';
 import xneg from '../../resources/images/yokohama2/negx.jpg';
@@ -8,7 +10,6 @@ import ypos from '../../resources/images/yokohama2/posy.jpg';
 import yneg from '../../resources/images/yokohama2/negy.jpg';
 import zpos from '../../resources/images/yokohama2/posz.jpg';
 import zneg from '../../resources/images/yokohama2/negz.jpg';
-// import stone from '../../resources/images/grate_t.png';
 import stone from '../../resources/images/grateframe.png';
 import bmp from '../../resources/images/grate_bmp.jpg';
 
@@ -17,9 +18,9 @@ export default class Render {
   constructor() {
     this.frames = 0;
     this.mirror = 4;
-    this.scale = 1.0;
-    this.ratio = 1024;
     this.size = 0.2;
+    this.scale = 11.0;
+    this.ratio = 1.0;
     this.maze = new BinaryMaze();
     this.width = window.innerWidth;
     this.height = window.innerHeight;
@@ -74,54 +75,50 @@ export default class Render {
       1000
     );
     window.addEventListener('resize', this.resize, true);
-    // window.addEventListener('click', () => {
-    //   console.log(this.camera.position);
-    // }, true);
+
     this.init();
     this.setEffects();
-    // this.createGUI();
+    this.createGUI();
     this.createScene();
     this.renderLoop();
+
+    // fix fisheye render on dom element //
+    document.getElementsByTagName('canvas')[0].style.borderRadius='50%';
+    document.getElementsByTagName('canvas')[0].style.overflow='hidden';
+    document.getElementsByTagName('canvas')[0].style.background='#000';
   }
+
+  createGUI = () => {
+    this.options = {
+      scale: this.scale,
+      ratio: this.ratio
+    };
+    this.gui = new dat.GUI();
+
+    const folderRender = this.gui.addFolder('Render Options');
+    folderRender.add(this.options, 'scale', 1, 240).step(0.1)
+      .onFinishChange((value) => {
+        this.scale = value;
+        this.setOptions();
+      });
+    folderRender.add(this.options, 'ratio', 0, 1).step(0.1)
+      .onFinishChange((value) => {
+        this.ratio = value;
+        this.setOptions();
+      });
+    folderRender.open();
+  };
+
+  setOptions() {
+    this.rfrag.uniforms.scale.value = this.scale;
+    this.rfrag.uniforms.ratio.value = this.ratio;
+  };
 
   resize = () => {
     this.width = window.innerWidth;
     this.height = window.innerHeight;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(this.width, this.height);
-  };
-
-  createGUI = () => {
-    this.options = {
-      scale: this.scale,
-      ratio: this.ratio,
-      mirror: this.mirror
-    };
-    this.gui = new dat.GUI();
-
-    const folderRender = this.gui.addFolder('Render Options');
-    folderRender.add(this.options, 'mirror', 0, 4).step(1)
-      .onFinishChange((value) => {
-        this.mirror = value;
-        this.setOptions();
-      });
-    folderRender.add(this.options, 'scale', 1, 100).step(0.1)
-      .onFinishChange((value) => {
-        this.scale = value * 1.0;
-        this.setOptions();
-      });
-    folderRender.add(this.options, 'ratio', 512, 1024).step(1)
-      .onFinishChange((value) => {
-        this.ratio = value * 1.0;
-        this.setOptions();
-      });
-    // folderRender.open();
-  };
-
-  setOptions() {
-    this.effect.uniforms.side.value = this.mirror;
-    this.rfrag.uniforms.scale.value = this.scale;
-    this.rfrag.uniforms.ratio.value = this.ratio;
   };
 
   init = () => {
@@ -161,28 +158,24 @@ export default class Render {
 
   setEffects = () => {
     let effect;
-    this.effect = new THREE.AnaglyphEffect(this.renderer);
-    this.effect.setSize(this.width, this.height);
-    // this.composer = new THREE.EffectComposer(this.renderer);
-    // this.composer.addPass(new THREE.RenderPass(this.scene, this.camera));
+    this.composer = new THREE.EffectComposer(this.renderer);
+    this.composer.addPass(new THREE.RenderPass(this.scene, this.camera));
 
-    // effect = new THREE.ShaderPass(THREE.MirrorShader);
-    // effect.uniforms.side.value = 1;
-    // this.composer.addPass(effect);
+    const renderPass = new THREE.RenderPass(this.scene, this.camera);
+    this.composer.addPass(renderPass);
 
-    // effect = new THREE.FilmPass(0.9, 0.9, 1000, true);
-    // this.composer.addPass(effect);
+    this.effect = new THREE.ShaderPass(THREE.MirrorShader);
+    this.effect.uniforms.side.value = this.mirror;
+    // this.effect.renderToScreen = true;
+    this.composer.addPass(this.effect);
 
-    // effect = new THREE.ShaderPass(THREE.DotScreenShader);
-    // effect.uniforms.scale.value = 1.75;
-    // this.composer.addPass(effect);
+    this.rfrag = new THREE.ShaderPass(THREE.RenderFragment);
+    // this.rfrag.uniforms.scale.value = this.scale;
+    this.rfrag.renderToScreen = true;
+    this.composer.addPass(this.rfrag);
 
-    // effect = new THREE.ShaderPass(THREE.RGBShiftShader);
-    // effect.uniforms.amount.value = 0.001;
-    // effect.uniforms.angle.value = 0.0;
-    // effect.renderToScreen = true;
-    // this.composer.addPass(effect);
   };
+
   getRandomVector = (a, b, c) => {
     const x = (a || 0.0) + (10 - Math.random() * 20);
     const y = (b || 0.0) + (15 - Math.random() * 30);
@@ -317,8 +310,8 @@ export default class Render {
 
   renderScene = () => {
     // Core three Render call //
-    // this.composer.render();
-    this.renderer.render(this.scene, this.camera);
+    this.composer.render();
+    // this.renderer.render(this.scene, this.camera);
     // this.effect.render(this.scene, this.camera);
   };
 
@@ -326,10 +319,9 @@ export default class Render {
     if (this.frames % 1 === 0) {
       // some function here for throttling
     }
-
     this.renderScene();
     this.cameraLoop();
-    this.frames += 0.5;
+    this.frames += 0.01;
 
     window.requestAnimationFrame(this.renderLoop.bind(this));
   };

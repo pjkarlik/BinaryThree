@@ -36,7 +36,7 @@ export default class BinaryMaze {
       str = oddCell && evenRow ? 1 : oddCell ? 1 : evenRow ? 0 : 1;
       this.cellData[d] = str;
     }
-    
+
     for (let r = 0; r < this.rows; r++) {
       for (let x = 0; x < this.cols; x++) {
         const y = this.rows - r - 1;
