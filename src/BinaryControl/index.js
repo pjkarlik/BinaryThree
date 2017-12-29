@@ -1,13 +1,6 @@
 import dat from 'dat-gui';
 import THREE from '../Three';
 import BinaryMaze from '../utils/BinaryMaze';
-// Skybox image imports //
-// import xpos from '../../resources/images/yokohama2/posx.jpg';
-// import xneg from '../../resources/images/yokohama2/negx.jpg';
-// import ypos from '../../resources/images/yokohama2/posy.jpg';
-// import yneg from '../../resources/images/yokohama2/negy.jpg';
-// import zpos from '../../resources/images/yokohama2/posz.jpg';
-// import zneg from '../../resources/images/yokohama2/negz.jpg';
 
 import stone from '../../resources/images/matallo.jpg';
 import bmp from '../../resources/images/matallo_bmp.jpg';
@@ -20,6 +13,7 @@ export default class Render {
     this.scale = 1.0;
     this.ratio = 1024;
     this.size = 0.2;
+    this.clock =  new THREE.Clock(true);
     this.maze = new BinaryMaze();
     this.width = window.innerWidth;
     this.height = window.innerHeight;
@@ -150,13 +144,11 @@ export default class Render {
     this.ambient.position.set(0, 0, 0);
     this.scene.add(this.ambient);
 
-    // Skybox //
-    // const urls = [xpos, xneg, ypos, yneg, zpos, zneg];
-    // this.skybox = new THREE.CubeTextureLoader().load(urls);
-    // this.skybox.format = THREE.RGBFormat;
-    // CubeReflectionMapping || CubeRefractionMapping//
-    // this.skybox.mapping = THREE.CubeReflectionMapping;
-    // this.scene.background = this.skybox;
+    this.controls = new THREE.FirstPersonControls(this.camera);
+    // this.controls.maxDistance = 3000;
+    // this.controls.minDistance = 0.1;
+    this.controls.lookSpeed = 0.1;
+    this.controls.movementSpeed = 0.1;
   };
 
   setEffects = () => {
@@ -185,11 +177,11 @@ export default class Render {
 
   createScene = () => {
     // Create custom material for the shader
-    this.metalMaterial = new THREE.MeshBasicMaterial({
+    // this.metalMaterial = new THREE.MeshBasicMaterial({
       // color: 0x999999
-      envMap: this.skybox
+      // envMap: this.skybox
       // side: THREE.DoubleSide
-    });
+    // });
     // other material //
     const texloader = new THREE.TextureLoader();
   
@@ -257,48 +249,6 @@ export default class Render {
     this.scene.add(object);
   };
 
-  cameraLoop = () => {
-    this.camPosition.x = this.camPosition.x - (this.camPosition.x - this.trsPosition.x) * 0.001;
-    this.camPosition.y = this.camPosition.y - (this.camPosition.y - this.trsPosition.y) * 0.009;
-    this.camPosition.z = this.camPosition.z - (this.camPosition.z - this.trsPosition.z) * 0.002;
-    this.camera.position.set(
-      this.camPosition.x,
-      this.camPosition.y,
-      this.camPosition.z
-    );
-    this.camera.lookAt(new THREE.Vector3(0, 0, 0));
-
-    if(!this.camTimeoutx && Math.random() * 255 > 252) {
-      this.trsPosition.x = (2.5 - Math.random() * 5);
-      this.camTimeoutx = true;
-      setTimeout(
-        () => { this.camTimeoutx = false; },
-        3000
-      );
-    }
-    if(!this.camTimeouty && Math.random() * 255 > 253) {
-      const level = Math.floor(Math.random() * 4);
-      this.trsPosition.y = this.levelMap[level];
-      this.camTimeouty = true;
-      setTimeout(
-        () => { this.camTimeouty = false; },
-        3000
-      );
-    }
-    if(!this.camTimeoutz && Math.random() * 255 > 252) {
-      this.trsPosition.z = (2.5 - Math.random() * 5);
-      this.camTimeoutz = true;
-      setTimeout(
-        () => { this.camTimeoutz = false; },
-        3000
-      );
-    }
-  };
-
-  cameraRange = () => {
-    return (2.5 - Math.random() * 5);
-  };
-
   renderScene = () => {
     // Core three Render call //
     // this.composer.render();
@@ -312,9 +262,8 @@ export default class Render {
     }
 
     this.renderScene();
-    this.cameraLoop();
     this.frames += 0.5;
-
+    this.controls.update(this.clock.getDelta());
     window.requestAnimationFrame(this.renderLoop.bind(this));
   };
 }
