@@ -220,7 +220,6 @@ export default class Render {
 
     this.grateMaterial = new THREE.MeshPhongMaterial({
       map: texture,
-      side: THREE.DoubleSide,
       bumpMap: bmpMap,
       transparent: true,
       bumpScale: 0.95,
@@ -251,13 +250,15 @@ export default class Render {
     const xOffset = ~~(0 - this.mazeWidth / 2);
     const yOffset = ~~(0 - this.mazeHeight / 2);
 
-    const geometry = new THREE.BoxGeometry(
+    const geometry = new THREE.BoxBufferGeometry(
       size,
       size,
       size
-    );
+      // size * 0.45, 16, 16
+    ); 
+    geometry.rotateX(90 * Math.PI / 180);
 
-    // geometry.computeVertexNormals();
+    geometry.computeVertexNormals();
     const chx = Math.floor(Math.random() * 100);
 
     const object = new THREE.Mesh(
