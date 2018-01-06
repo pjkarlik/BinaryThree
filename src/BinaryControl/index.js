@@ -2,8 +2,8 @@ import dat from 'dat-gui';
 import THREE from '../Three';
 import BinaryMaze from '../utils/BinaryMaze';
 
-import stone from '../../resources/images/matallo.jpg';
-import bmp from '../../resources/images/matallo_bmp.jpg';
+import stone from '../../resources/images/grateframe.png';
+import bmp from '../../resources/images/grate_bmp.jpg';
 
 // Render Class Object //
 export default class Render {
@@ -15,10 +15,14 @@ export default class Render {
     this.size = 0.2;
     this.clock =  new THREE.Clock(true);
     this.maze = new BinaryMaze();
+    this.mouse = new THREE.Vector2();
+    this.raycaster = new THREE.Raycaster();
     this.width = window.innerWidth;
     this.height = window.innerHeight;
     this.devicePixelRatio = window.devicePixelRatio;
-    this.background = 0x000000;
+    this.background = 0x000000; 
+    this.INTERSECTED;
+
     // Configurations //
     this.cameraConfig = {
       position: [
@@ -68,9 +72,9 @@ export default class Render {
       1000
     );
     window.addEventListener('resize', this.resize, true);
-    // window.addEventListener('click', () => {
-    //   console.log(this.camera.position);
-    // }, true);
+    window.addEventListener('click', () => {
+      console.log(this.camera.position);
+    }, true);
     this.init();
     this.setEffects();
     // this.createGUI();
@@ -207,7 +211,7 @@ export default class Render {
 
     // end material //
     let mve = 0;
-    for (let v = 0; v < 4; v += 1) {
+    for (let v = 0; v < 8; v += 1) {
 
       const blob = this.getMazeBlob();
       this.mazeWidth = blob.mazeWidth;
@@ -259,6 +263,30 @@ export default class Render {
   renderLoop = () => {
     if (this.frames % 1 === 0) {
       // some function here for throttling
+    }
+
+    this.raycaster.setFromCamera( this.camera, this.camera );
+
+    this.intersects = this.raycaster.intersectObjects(this.scene.children );
+
+    if (this.intersects.length > 0 ) {
+
+      if ( this.INTERSECTED != this.intersects[ 0 ].object ) {
+
+        if ( this.INTERSECTED ) this.INTERSECTED.material.emissive.setHex( this.INTERSECTED.currentHex );
+
+        this.INTERSECTED = this.intersects[0].object;
+        this.INTERSECTED.currentHex = this.INTERSECTED.material.emissive.getHex();
+        this.INTERSECTED.material.emissive.setHex( 0xff0000 );
+
+      }
+
+    } else {
+
+      if ( this.INTERSECTED ) this.INTERSECTED.material.emissive.setHex( this.INTERSECTED.currentHex );
+
+      this.INTERSECTED = null;
+
     }
 
     this.renderScene();
