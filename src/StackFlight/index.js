@@ -8,29 +8,22 @@ import bmp from '../../resources/images/grate_bmp.jpg';
 // Render Class Object //
 export default class Render {
   constructor() {
+    this.layers = 6;
     this.frames = 0;
     this.mirror = 4;
     this.scale = 1.0;
     this.ratio = 1024;
     this.size = 0.2;
-    this.clock =  new THREE.Clock(true);
     this.maze = new BinaryMaze();
-    this.mouse = new THREE.Vector2();
-    this.raycaster = new THREE.Raycaster();
+    this.mazeObject = new Array();
     this.width = window.innerWidth;
     this.height = window.innerHeight;
     this.devicePixelRatio = window.devicePixelRatio;
-    this.background = 0x000000; 
-    this.INTERSECTED;
-
+    this.background = 0x000000;
     // Configurations //
     this.cameraConfig = {
-      position: [
-        -0.5,
-        0.5,
-        -1.0
-      ],
-      lookAt: [0, 1, 2],
+      position: [0, 0, 0],
+      lookAt: [0, 0, 0],
       aspect: this.width / this.height,
       viewAngle: 85,
       near: 0.08,
@@ -48,11 +41,6 @@ export default class Render {
       y: 0.06,
       z: -1.0
     };
-    this.trsPosition = {
-      x: -0.5,
-      y: this.camPosition.y,
-      z: -1.0
-    };
     this.levelMap = [
       1.0,
       0.46,
@@ -60,21 +48,11 @@ export default class Render {
       -0.36,
       -0.8
     ];
-    this.camTimeoutx = true;
-    this.camTimeouty = true;
-    this.camTimeoutz = true;
-    setTimeout(
-      () => {
-        this.camTimeoutx = false;
-        this.camTimeouty = false;
-        this.camTimeoutz = false;
-      },
-      1000
-    );
+
     window.addEventListener('resize', this.resize, true);
-    window.addEventListener('click', () => {
-      console.log(this.camera.position);
-    }, true);
+    // window.addEventListener('click', () => {
+    //   console.log(this.camera.position);
+    // }, true);
     this.init();
     this.setEffects();
     // this.createGUI();
@@ -147,12 +125,6 @@ export default class Render {
     this.ambient = new THREE.AmbientLight(0xFFFFFF);
     this.ambient.position.set(0, 0, 0);
     this.scene.add(this.ambient);
-
-    this.controls = new THREE.FirstPersonControls(this.camera);
-    // this.controls.maxDistance = 3000;
-    // this.controls.minDistance = 0.1;
-    this.controls.lookSpeed = 0.1;
-    this.controls.movementSpeed = 0.1;
   };
 
   setEffects = () => {
@@ -180,28 +152,19 @@ export default class Render {
   };
 
   createScene = () => {
-    // Create custom material for the shader
-    // this.metalMaterial = new THREE.MeshBasicMaterial({
-      // color: 0x999999
-      // envMap: this.skybox
-      // side: THREE.DoubleSide
-    // });
-    // other material //
     const texloader = new THREE.TextureLoader();
   
     const texture = texloader.load(stone, () => {
       texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-      texture.offset.set(0, 0);
       texture.repeat.set(1, 1);
     });
   
     const bmpMap = texloader.load(bmp, () => {
       bmpMap.wrapS = bmpMap.wrapT = THREE.RepeatWrapping;
-      texture.offset.set(0, 0);
       texture.repeat.set(1, 1);
     });
 
-    this.boxMaterial = new THREE.MeshPhongMaterial({
+    this.boxMaterial = new THREE.MeshLambertMaterial({
       map: texture,
       side: THREE.DoubleSide,
       bumpMap: bmpMap,
@@ -211,18 +174,26 @@ export default class Render {
 
     // end material //
     let mve = 0;
-    for (let v = 0; v < 8; v += 1) {
+    for (let v = 0; v < this.layers; v += 1) {
 
       const blob = this.getMazeBlob();
       this.mazeWidth = blob.mazeWidth;
       this.mazeHeight = blob.mazeHeight;
 
+      this.mazeObject[v] = {
+        mazeWidth: blob.mazeWidth,
+        mazeHeight: blob.mazeHeight,
+        mazeReturn: new Array()
+      };
+      
       for (let d = 0; d < blob.mazeReturn.length; d += 1) {
         const x = d % this.maze.cc;
         const y = ~~((d - x) / this.maze.cc);
         const z = mve - 0.4;
         if (blob.mazeReturn[d] === 1) {
-          this.drawCube({ x, y, z });
+          this.mazeObject[v].mazeReturn[d] = this.drawCube({ x, y, z });
+        } else {
+          this.mazeObject[v].mazeReturn[d] = 0;
         }
       }
       mve += this.size * 2;
@@ -240,21 +211,46 @@ export default class Render {
       size
     );
 
-    // geometry.computeVertexNormals();
+    geometry.computeVertexNormals();
     const object = new THREE.Mesh(
       geometry,
       this.boxMaterial,
     );
     object.position.set(
       xOffset + point.x * size,
-      -0.15 + point.z,
-      yOffset + point.y * size
+      yOffset + point.y * size,
+      -0.15 + point.z
     );
     this.scene.add(object);
+    return object;
+  };
+
+  cameraLoop = () => {
+    this.camera.position.set(
+      0,
+      0,
+      0 // this.frames * 0.001,
+    );
+    this.camera.rotateZ((0.06) * Math.PI / 180);
+  };
+
+  moveObjects = () => {
+    for (let v = 0; v < this.layers; v += 1) {
+      const blob = this.mazeObject[v];
+      for (let d = 0; d < blob.mazeReturn.length; d += 1) {
+        if (blob.mazeReturn[d] !== 0) {
+          const object = blob.mazeReturn[d];
+          // object.position.set(
+          //   xOffset + point.x * size,
+          //   yOffset + point.y * size,
+          //   -0.15 + point.z
+          // );
+        } 
+      }
+    }
   };
 
   renderScene = () => {
-    // Core three Render call //
     // this.composer.render();
     this.renderer.render(this.scene, this.camera);
     // this.effect.render(this.scene, this.camera);
@@ -262,36 +258,12 @@ export default class Render {
 
   renderLoop = () => {
     if (this.frames % 1 === 0) {
-      // some function here for throttling
-    }
-
-    this.raycaster.setFromCamera( this.camera, this.camera );
-
-    this.intersects = this.raycaster.intersectObjects(this.scene.children );
-
-    if (this.intersects.length > 0 ) {
-
-      if ( this.INTERSECTED != this.intersects[ 0 ].object ) {
-
-        if ( this.INTERSECTED ) this.INTERSECTED.material.emissive.setHex( this.INTERSECTED.currentHex );
-
-        this.INTERSECTED = this.intersects[0].object;
-        this.INTERSECTED.currentHex = this.INTERSECTED.material.emissive.getHex();
-        this.INTERSECTED.material.emissive.setHex( 0xff0000 );
-
-      }
-
-    } else {
-
-      if ( this.INTERSECTED ) this.INTERSECTED.material.emissive.setHex( this.INTERSECTED.currentHex );
-
-      this.INTERSECTED = null;
-
     }
 
     this.renderScene();
+    this.cameraLoop();
     this.frames += 0.5;
-    this.controls.update(this.clock.getDelta());
+
     window.requestAnimationFrame(this.renderLoop.bind(this));
   };
 }
