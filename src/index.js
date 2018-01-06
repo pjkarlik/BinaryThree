@@ -1,4 +1,4 @@
-import Render from './BinaryControl/index';
+import Render from './BinaryStacks/index';
 import { description, version } from '../version.json';
 
 require('../resources/styles/styles.css');
