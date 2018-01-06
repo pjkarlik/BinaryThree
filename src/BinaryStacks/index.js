@@ -2,16 +2,17 @@ import dat from 'dat-gui';
 import THREE from '../Three';
 import BinaryMaze from '../utils/BinaryMaze';
 // Skybox image imports //
-// import xpos from '../../resources/images/yokohama2/posx.jpg';
-// import xneg from '../../resources/images/yokohama2/negx.jpg';
-// import ypos from '../../resources/images/yokohama2/posy.jpg';
-// import yneg from '../../resources/images/yokohama2/negy.jpg';
-// import zpos from '../../resources/images/yokohama2/posz.jpg';
-// import zneg from '../../resources/images/yokohama2/negz.jpg';
+import xpos from '../../resources/images/yokohama2/posx.jpg';
+import xneg from '../../resources/images/yokohama2/negx.jpg';
+import ypos from '../../resources/images/yokohama2/posy.jpg';
+import yneg from '../../resources/images/yokohama2/negy.jpg';
+import zpos from '../../resources/images/yokohama2/posz.jpg';
+import zneg from '../../resources/images/yokohama2/negz.jpg';
 
 import stone from '../../resources/images/matallo.jpg';
 import bmp from '../../resources/images/matallo_bmp.jpg';
-
+import grate from '../../resources/images/grate_t.png';
+import bmpg from '../../resources/images/grate_bmp.jpg';
 // Render Class Object //
 export default class Render {
   constructor() {
@@ -151,11 +152,11 @@ export default class Render {
     this.scene.add(this.ambient);
 
     // Skybox //
-    // const urls = [xpos, xneg, ypos, yneg, zpos, zneg];
-    // this.skybox = new THREE.CubeTextureLoader().load(urls);
-    // this.skybox.format = THREE.RGBFormat;
+    const urls = [xpos, xneg, ypos, yneg, zpos, zneg];
+    this.skybox = new THREE.CubeTextureLoader().load(urls);
+    this.skybox.format = THREE.RGBFormat;
     // CubeReflectionMapping || CubeRefractionMapping//
-    // this.skybox.mapping = THREE.CubeReflectionMapping;
+    this.skybox.mapping = THREE.CubeReflectionMapping;
     // this.scene.background = this.skybox;
   };
 
@@ -193,19 +194,31 @@ export default class Render {
     // other material //
     const texloader = new THREE.TextureLoader();
   
-    const texture = texloader.load(stone, () => {
+    let texture = texloader.load(stone, () => {
       texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-      texture.offset.set(0, 0);
-      texture.repeat.set(1, 1);
     });
   
-    const bmpMap = texloader.load(bmp, () => {
+    let bmpMap = texloader.load(bmp, () => {
       bmpMap.wrapS = bmpMap.wrapT = THREE.RepeatWrapping;
-      texture.offset.set(0, 0);
-      texture.repeat.set(1, 1);
     });
 
     this.boxMaterial = new THREE.MeshPhongMaterial({
+      map: texture,
+      side: THREE.DoubleSide,
+      bumpMap: bmpMap,
+      transparent: true,
+      bumpScale: 0.95,
+    });
+
+    texture = texloader.load(grate, () => {
+      texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+    });
+  
+    bmpMap = texloader.load(bmpg, () => {
+      bmpMap.wrapS = bmpMap.wrapT = THREE.RepeatWrapping;
+    });
+
+    this.grateMaterial = new THREE.MeshPhongMaterial({
       map: texture,
       side: THREE.DoubleSide,
       bumpMap: bmpMap,
@@ -245,9 +258,11 @@ export default class Render {
     );
 
     // geometry.computeVertexNormals();
+    const chx = Math.floor(Math.random() * 100);
+
     const object = new THREE.Mesh(
       geometry,
-      this.boxMaterial,
+      chx > 65 ? this.metalMaterial : chx < 35 ? this.grateMaterial : this.boxMaterial,
     );
     object.position.set(
       xOffset + point.x * size,
@@ -259,7 +274,7 @@ export default class Render {
 
   cameraLoop = () => {
     this.camPosition.x = this.camPosition.x - (this.camPosition.x - this.trsPosition.x) * 0.001;
-    this.camPosition.y = this.camPosition.y - (this.camPosition.y - this.trsPosition.y) * 0.009;
+    this.camPosition.y = this.camPosition.y - (this.camPosition.y - this.trsPosition.y) * 0.09;
     this.camPosition.z = this.camPosition.z - (this.camPosition.z - this.trsPosition.z) * 0.002;
     this.camera.position.set(
       this.camPosition.x,
