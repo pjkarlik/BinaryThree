@@ -13,6 +13,8 @@ import stone from '../../resources/images/matallo.jpg';
 import bmp from '../../resources/images/matallo_bmp.jpg';
 import grate from '../../resources/images/grate_t.png';
 import bmpg from '../../resources/images/grate_bmp.jpg';
+import grass from '../../resources/images/grass02.jpg';
+import bmps from '../../resources/images/grass01.jpg';
 // Render Class Object //
 export default class Render {
   constructor() {
@@ -185,12 +187,15 @@ export default class Render {
   };
 
   createScene = () => {
+    this.materialMap = [];
+
     // Create custom material for the shader
     this.metalMaterial = new THREE.MeshBasicMaterial({
       // color: 0x999999
       envMap: this.skybox
       // side: THREE.DoubleSide
     });
+    this.materialMap.push(this.metalMaterial);
     // other material //
     const texloader = new THREE.TextureLoader();
   
@@ -209,6 +214,7 @@ export default class Render {
       transparent: true,
       bumpScale: 0.95,
     });
+    this.materialMap.push(this.boxMaterial);
 
     texture = texloader.load(grate, () => {
       texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
@@ -224,7 +230,23 @@ export default class Render {
       transparent: true,
       bumpScale: 0.95,
     });
+    this.materialMap.push(this.grateMaterial);
 
+    texture = texloader.load(grass, () => {
+      texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+    });
+  
+    bmpMap = texloader.load(bmps, () => {
+      bmpMap.wrapS = bmpMap.wrapT = THREE.RepeatWrapping;
+    });
+
+    this.grassMaterial = new THREE.MeshPhongMaterial({
+      map: texture,
+      bumpMap: bmpMap,
+      transparent: true,
+      bumpScale: 0.95,
+    });
+    this.materialMap.push(this.grassMaterial);
     // end material //
     let mve = 0;
     for (let v = 0; v < 4; v += 1) {
@@ -238,7 +260,7 @@ export default class Render {
         const y = ~~((d - x) / this.maze.cc);
         const z = mve - 0.4;
         if (blob.mazeReturn[d] === 1) {
-          this.drawCube({ x, y, z });
+          this.drawCube({ x, y, z, v });
         }
       }
       mve += this.size * 2;
@@ -263,7 +285,7 @@ export default class Render {
 
     const object = new THREE.Mesh(
       geometry,
-      chx > 65 ? this.metalMaterial : chx < 35 ? this.grateMaterial : this.boxMaterial,
+      this.materialMap[point.v]
     );
     object.position.set(
       xOffset + point.x * size,
