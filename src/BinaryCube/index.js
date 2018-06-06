@@ -11,12 +11,15 @@ import yneg from '../../resources/images/buddha/negy.jpg';
 import zpos from '../../resources/images/buddha/posz.jpg';
 import zneg from '../../resources/images/buddha/negz.jpg';
 
-import stone from '../../resources/images/matallo.jpg';
-import bmp from '../../resources/images/matallo_bmp.jpg';
+import grass from '../../resources/images/grass02.jpg';
+import bmps from '../../resources/images/grassBmp.jpg';
+import stone from '../../resources/images/stone.jpg';
+import bmpn from '../../resources/images/stone_bmp.jpg';
 
 // Render Class Object //
 export default class Render {
   constructor() {
+    this.background = 0x000000;
     this.frames = 0;
     this.mirror = 4;
     this.scale = 0.5;
@@ -63,10 +66,14 @@ export default class Render {
     };
     this.levelMap = [
       1.0,
-      0.46,
-      0.06,
-      -0.36,
-      -0.8
+      0.5,
+      0.0,
+      -0.5,
+      -0.1
+      // 0.46,
+      // 0.06,
+      // -0.36,
+      // -0.8
     ];
     this.camTimeoutx = true;
     this.camTimeouty = true;
@@ -137,7 +144,8 @@ export default class Render {
     document.body.appendChild(this.renderer.domElement);
 
     this.scene = new THREE.Scene();
-    this.scene.fog = new THREE.FogExp2(0x000000, 0.55);
+    this.scene.background = new THREE.Color(this.background);
+    // this.scene.fog = new THREE.FogExp2(this.background, 0.55);
   
     this.camera = new THREE.PerspectiveCamera(
         this.cameraConfig.viewAngle,
@@ -152,7 +160,7 @@ export default class Render {
 
     // Set AmbientLight //
     this.ambient = new THREE.AmbientLight(0xFFFFFF);
-    this.ambient.position.set(0, 0, 0);
+    this.ambient.position.set(0, 0, -2);
     this.scene.add(this.ambient);
 
     // Skybox //
@@ -187,25 +195,38 @@ export default class Render {
 
   createScene = () => {
     // Create custom material for the shader
+    const texloader = new THREE.TextureLoader();
+
     this.metalMaterial = new THREE.MeshBasicMaterial({
       envMap: this.skybox,
       side: THREE.DoubleSide
     });
-    // other material //
-    const texloader = new THREE.TextureLoader();
-    const texture = texloader.load(stone, () => {
+  
+    let texture = texloader.load(grass, () => {
       texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-      texture.offset.set(0, 0);
-      texture.repeat.set(1, 1);
     });
-    const bmpMap = texloader.load(bmp, () => {
+  
+    let bmpMap = texloader.load(bmps, () => {
       bmpMap.wrapS = bmpMap.wrapT = THREE.RepeatWrapping;
-      texture.offset.set(0, 0);
-      texture.repeat.set(1, 1);
     });
-    this.boxMaterial = new THREE.MeshPhongMaterial({
+
+    this.grassMaterial = new THREE.MeshPhongMaterial({
       map: texture,
-      side: THREE.DoubleSide,
+      bumpMap: bmpMap,
+      transparent: true,
+      bumpScale: 0.95,
+    });
+
+    texture = texloader.load(stone, () => {
+      texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+    });
+  
+    bmpMap = texloader.load(bmpn, () => {
+      bmpMap.wrapS = bmpMap.wrapT = THREE.RepeatWrapping;
+    });
+
+    this.stoneMaterial = new THREE.MeshPhongMaterial({
+      map: texture,
       bumpMap: bmpMap,
       transparent: true,
       bumpScale: 0.95,
@@ -221,16 +242,19 @@ export default class Render {
       for (let d = 0; d < blob.mazeReturn.length; d += 1) {
         const x = d % this.maze.cc;
         const y = ~~((d - x) / this.maze.cc);
-        const z = mve;
+        let z = mve;
         if (blob.mazeReturn[d] === 1) {
-          this.drawCube({ x, y, z });
+          this.drawCube({ x, y, z }, false);
+        } else {
+          z -= 0.12;
+          this.drawCube({ x, y, z }, true);
         }
       }
       mve += this.size * 2;
     }
   };
 
-  drawCube = (point) => {
+  drawCube = (point, type) => {
     const size = this.size;
     const xOffset = ~~(0 - this.mazeWidth / 2);
     const yOffset = ~~(0 - this.mazeHeight / 2);
@@ -241,7 +265,7 @@ export default class Render {
         size,
         size
       ),
-      this.boxMaterial,
+      type ? this.grassMaterial : this.stoneMaterial,
     );
     object.position.set(
       xOffset + point.x * size,
@@ -280,14 +304,14 @@ export default class Render {
         3000
       );
     }
-    if(!this.camTimeoutz && Math.random() * 255 > 253) {
-      this.trsPosition.z = (2.5 - Math.random() * 5);
-      this.camTimeoutz = true;
-      setTimeout(
-        () => { this.camTimeoutz = false; },
-        3000
-      );
-    }
+    // if(!this.camTimeoutz && Math.random() * 255 > 253) {
+    //   this.trsPosition.z = 5.0 + Math.floor(Math.random() * 6);
+    //   this.camTimeoutz = true;
+    //   setTimeout(
+    //     () => { this.camTimeoutz = false; },
+    //     3000
+    //   );
+    // }
   };
 
   cameraRange = () => {

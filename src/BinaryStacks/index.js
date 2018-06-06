@@ -9,12 +9,14 @@ import yneg from '../../resources/images/yokohama2/negy.jpg';
 import zpos from '../../resources/images/yokohama2/posz.jpg';
 import zneg from '../../resources/images/yokohama2/negz.jpg';
 
-import stone from '../../resources/images/matallo.jpg';
+import matallo from '../../resources/images/matallo.jpg';
 import bmp from '../../resources/images/matallo_bmp.jpg';
 import grate from '../../resources/images/grate_t.png';
 import bmpg from '../../resources/images/grate_bmp.jpg';
 import grass from '../../resources/images/grass02.jpg';
-import bmps from '../../resources/images/grass01.jpg';
+import bmps from '../../resources/images/grassBmp.jpg';
+import stone from '../../resources/images/stone.jpg';
+import bmpn from '../../resources/images/stone_bmp.jpg';
 // Render Class Object //
 export default class Render {
   constructor() {
@@ -59,6 +61,7 @@ export default class Render {
       z: -1.0
     };
     this.levelMap = [
+      1.36,
       1.0,
       0.46,
       0.06,
@@ -188,22 +191,33 @@ export default class Render {
 
   createScene = () => {
     this.materialMap = [];
+    const texloader = new THREE.TextureLoader();
 
-    // Create custom material for the shader
     this.metalMaterial = new THREE.MeshBasicMaterial({
       // color: 0x999999
       envMap: this.skybox
-      // side: THREE.DoubleSide
     });
-    this.materialMap.push(this.metalMaterial);
-    // other material //
-    const texloader = new THREE.TextureLoader();
-  
-    let texture = texloader.load(stone, () => {
+
+    let texture = texloader.load(grass, () => {
       texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
     });
   
-    let bmpMap = texloader.load(bmp, () => {
+    let bmpMap = texloader.load(bmps, () => {
+      bmpMap.wrapS = bmpMap.wrapT = THREE.RepeatWrapping;
+    });
+
+    this.grassMaterial = new THREE.MeshPhongMaterial({
+      map: texture,
+      bumpMap: bmpMap,
+      transparent: true,
+      bumpScale: 0.95,
+    });
+
+    texture = texloader.load(matallo, () => {
+      texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+    });
+  
+    bmpMap = texloader.load(bmp, () => {
       bmpMap.wrapS = bmpMap.wrapT = THREE.RepeatWrapping;
     });
 
@@ -214,7 +228,6 @@ export default class Render {
       transparent: true,
       bumpScale: 0.95,
     });
-    this.materialMap.push(this.boxMaterial);
 
     texture = texloader.load(grate, () => {
       texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
@@ -230,26 +243,31 @@ export default class Render {
       transparent: true,
       bumpScale: 0.95,
     });
-    this.materialMap.push(this.grateMaterial);
 
-    texture = texloader.load(grass, () => {
+ 
+    texture = texloader.load(stone, () => {
       texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
     });
   
-    bmpMap = texloader.load(bmps, () => {
+    bmpMap = texloader.load(bmpn, () => {
       bmpMap.wrapS = bmpMap.wrapT = THREE.RepeatWrapping;
     });
 
-    this.grassMaterial = new THREE.MeshPhongMaterial({
+    this.stoneMaterial = new THREE.MeshPhongMaterial({
       map: texture,
       bumpMap: bmpMap,
       transparent: true,
       bumpScale: 0.95,
     });
+
     this.materialMap.push(this.grassMaterial);
+    this.materialMap.push(this.stoneMaterial);  
+    this.materialMap.push(this.boxMaterial);
+    this.materialMap.push(this.grateMaterial);
+    this.materialMap.push(this.metalMaterial);
     // end material //
     let mve = 0;
-    for (let v = 0; v < 4; v += 1) {
+    for (let v = 0; v < 5; v += 1) {
 
       const blob = this.getMazeBlob();
       this.mazeWidth = blob.mazeWidth;
@@ -276,13 +294,12 @@ export default class Render {
       size,
       size,
       size
-      // size * 0.45, 16, 16
     ); 
     geometry.rotateX(90 * Math.PI / 180);
 
     geometry.computeVertexNormals();
     const chx = Math.floor(Math.random() * 100);
-
+    
     const object = new THREE.Mesh(
       geometry,
       this.materialMap[point.v]
@@ -292,6 +309,8 @@ export default class Render {
       -0.15 + point.z,
       yOffset + point.y * size
     );
+    object.castShadow = true;
+    object.receiveShadow = true;
     this.scene.add(object);
   };
 
@@ -315,7 +334,7 @@ export default class Render {
       );
     }
     if(!this.camTimeouty && Math.random() * 255 > 253) {
-      const level = Math.floor(Math.random() * 4);
+      const level = Math.floor(Math.random() * 5);
       this.trsPosition.y = this.levelMap[level];
       this.camTimeouty = true;
       setTimeout(
