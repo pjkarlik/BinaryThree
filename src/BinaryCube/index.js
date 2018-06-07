@@ -11,8 +11,10 @@ import yneg from '../../resources/images/buddha/negy.jpg';
 import zpos from '../../resources/images/buddha/posz.jpg';
 import zneg from '../../resources/images/buddha/negz.jpg';
 
-import grass from '../../resources/images/grass02.jpg';
-import bmps from '../../resources/images/grassBmp.jpg';
+import grass from '../../resources/images/grate_t.png';
+import bmps from '../../resources/images/grate_bmp.jpg';
+// import grass from '../../resources/images/grass02.jpg';
+// import bmps from '../../resources/images/grassBmp.jpg';
 import stone from '../../resources/images/stone.jpg';
 import bmpn from '../../resources/images/stone_bmp.jpg';
 
@@ -65,11 +67,11 @@ export default class Render {
       z: -1.0
     };
     this.levelMap = [
-      1.0,
       0.5,
-      0.0,
-      -0.5,
-      -0.1
+      0.4,
+      0.3,
+      0.2,
+      0.1
       // 0.46,
       // 0.06,
       // -0.36,
@@ -159,10 +161,15 @@ export default class Render {
     this.scene.add(this.camera);
 
     // Set AmbientLight //
-    this.ambient = new THREE.AmbientLight(0xFFFFFF);
-    this.ambient.position.set(0, 0, -2);
+    this.ambient = new THREE.AmbientLight(0xFFFFFF, 0.3);
+    this.ambient.position.set(-2, 0, 0);
     this.scene.add(this.ambient);
 
+    this.directionalLight = new THREE.DirectionalLight(0xFFFFFF, 0.5);
+    this.directionalLight.position.set(0, 1, 0);
+    this.scene.add(this.directionalLight);
+    // this.helper = new THREE.DirectionalLightHelper(this.directionalLight);
+    // this.scene.add(this.helper);
     // Skybox //
     const urls = [xpos, xneg, ypos, yneg, zpos, zneg];
     this.skybox = new THREE.CubeTextureLoader().load(urls);
@@ -238,15 +245,17 @@ export default class Render {
       const blob = this.getMazeBlob();
       this.mazeWidth = blob.mazeWidth;
       this.mazeHeight = blob.mazeHeight;
-
+      this.xOffset = ~~(0 - this.mazeWidth / 2);
+      this.yOffset = ~~(0 - this.mazeHeight / 2);
+      console.log(this.xOffset,this.yOffset);
       for (let d = 0; d < blob.mazeReturn.length; d += 1) {
         const x = d % this.maze.cc;
         const y = ~~((d - x) / this.maze.cc);
         let z = mve;
-        if (blob.mazeReturn[d] === 1) {
+        if (blob.mazeReturn[d] !== 1) {
           this.drawCube({ x, y, z }, false);
         } else {
-          z -= 0.12;
+          z += 0.2;
           this.drawCube({ x, y, z }, true);
         }
       }
@@ -256,8 +265,7 @@ export default class Render {
 
   drawCube = (point, type) => {
     const size = this.size;
-    const xOffset = ~~(0 - this.mazeWidth / 2);
-    const yOffset = ~~(0 - this.mazeHeight / 2);
+
 
     const object = new THREE.Mesh(
       new THREE.CubeGeometry(
@@ -268,17 +276,17 @@ export default class Render {
       type ? this.grassMaterial : this.stoneMaterial,
     );
     object.position.set(
-      xOffset + point.x * size,
+      this.xOffset + point.x * size,
       -0.15 + point.z,
-      yOffset + point.y * size
+      this.yOffset + point.y * size
     );
     this.scene.add(object);
   };
 
   cameraLoop = () => {
-    this.camPosition.x = this.camPosition.x - (this.camPosition.x - this.trsPosition.x) * 0.01;
+    this.camPosition.x = this.camPosition.x - (this.camPosition.x - this.trsPosition.x) * 0.03;
     this.camPosition.y = this.camPosition.y - (this.camPosition.y - this.trsPosition.y) * 0.01;
-    this.camPosition.z = this.camPosition.z - (this.camPosition.z - this.trsPosition.z) * 0.01;
+    this.camPosition.z = this.camPosition.z - (this.camPosition.z - this.trsPosition.z) * 0.05;
     this.camera.position.set(
       this.camPosition.x,
       this.camPosition.y,
@@ -286,8 +294,9 @@ export default class Render {
     );
     this.camera.lookAt(new THREE.Vector3(0, 0, 0));
 
-    if(!this.camTimeoutx && Math.random() * 255 > 253) {
-      this.trsPosition.x = (2.5 - Math.random() * 5);
+    if(!this.camTimeoutx && Math.random() * 255 > 213) {
+      this.trsPosition.x = this.xOffset - Math.random() * (this.xOffset * 2);
+      console.log(this.trsPosition.x);
       this.camTimeoutx = true;
       setTimeout(
         () => { this.camTimeoutx = false; },
@@ -304,14 +313,14 @@ export default class Render {
         3000
       );
     }
-    // if(!this.camTimeoutz && Math.random() * 255 > 253) {
-    //   this.trsPosition.z = 5.0 + Math.floor(Math.random() * 6);
-    //   this.camTimeoutz = true;
-    //   setTimeout(
-    //     () => { this.camTimeoutz = false; },
-    //     3000
-    //   );
-    // }
+    if(!this.camTimeoutz && Math.random() * 255 > 253) {
+      this.trsPosition.z =  this.yOffset - Math.random() * (this.yOffset * 2);
+      this.camTimeoutz = true;
+      setTimeout(
+        () => { this.camTimeoutz = false; },
+        3000
+      );
+    }
   };
 
   cameraRange = () => {
