@@ -4,17 +4,17 @@ import dat from 'dat-gui';
 import THREE from '../ThreeLight';
 import BinaryMaze from '../utils/BinaryCube';
 // Skybox image imports //
-import xpos from '../../resources/images/buddha/posx.jpg';
-import xneg from '../../resources/images/buddha/negx.jpg';
-import ypos from '../../resources/images/buddha/posy.jpg';
-import yneg from '../../resources/images/buddha/negy.jpg';
-import zpos from '../../resources/images/buddha/posz.jpg';
-import zneg from '../../resources/images/buddha/negz.jpg';
+import xpos from '../../resources/images/brudslojan/posx.jpg';
+import xneg from '../../resources/images/brudslojan/negx.jpg';
+import ypos from '../../resources/images/brudslojan/posy.jpg';
+import yneg from '../../resources/images/brudslojan/negy.jpg';
+import zpos from '../../resources/images/brudslojan/posz.jpg';
+import zneg from '../../resources/images/brudslojan/negz.jpg';
 
-import grass from '../../resources/images/grate_t.png';
-import bmps from '../../resources/images/grate_bmp.jpg';
-// import grass from '../../resources/images/grass02.jpg';
-// import bmps from '../../resources/images/grassBmp.jpg';
+// import grass from '../../resources/images/grate_t.png';
+// import bmps from '../../resources/images/grate_bmp.jpg';
+import grass from '../../resources/images/grass02.jpg';
+import bmps from '../../resources/images/grassBmp.jpg';
 import stone from '../../resources/images/stone.jpg';
 import bmpn from '../../resources/images/stone_bmp.jpg';
 
@@ -67,11 +67,11 @@ export default class Render {
       z: -1.0
     };
     this.levelMap = [
-      0.5,
-      0.4,
-      0.3,
-      0.2,
-      0.1
+      0.32,
+      0.16,
+      0.9,
+      0.6,
+      0.3
       // 0.46,
       // 0.06,
       // -0.36,
@@ -161,7 +161,7 @@ export default class Render {
     this.scene.add(this.camera);
 
     // Set AmbientLight //
-    this.ambient = new THREE.AmbientLight(0xFFFFFF, 0.3);
+    this.ambient = new THREE.AmbientLight(0xFFFFFF, 0.2);
     this.ambient.position.set(-2, 0, 0);
     this.scene.add(this.ambient);
 
@@ -176,7 +176,7 @@ export default class Render {
     this.skybox.format = THREE.RGBFormat;
     // CubeReflectionMapping || CubeRefractionMapping//
     this.skybox.mapping = THREE.CubeReflectionMapping;
-    // this.scene.background = this.skybox;
+    this.scene.background = this.skybox;
   };
 
   getRandomVector = (a, b, c) => {
@@ -255,7 +255,7 @@ export default class Render {
         if (blob.mazeReturn[d] !== 1) {
           this.drawCube({ x, y, z }, false);
         } else {
-          z += 0.2;
+          z += 0.1;
           this.drawCube({ x, y, z }, true);
         }
       }
@@ -304,7 +304,7 @@ export default class Render {
       );
     }
     if(!this.camTimeouty && Math.random() * 255 > 254) {
-      const level = Math.floor(Math.random() * 4);
+      const level = Math.floor(Math.random() * 5);
       console.log(level);
       this.trsPosition.y = this.levelMap[level];
       this.camTimeouty = true;

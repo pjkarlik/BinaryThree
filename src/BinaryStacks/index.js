@@ -2,12 +2,12 @@ import dat from 'dat-gui';
 import THREE from '../Three';
 import BinaryMaze from '../utils/BinaryMaze';
 // Skybox image imports //
-import xpos from '../../resources/images/yokohama2/posx.jpg';
-import xneg from '../../resources/images/yokohama2/negx.jpg';
-import ypos from '../../resources/images/yokohama2/posy.jpg';
-import yneg from '../../resources/images/yokohama2/negy.jpg';
-import zpos from '../../resources/images/yokohama2/posz.jpg';
-import zneg from '../../resources/images/yokohama2/negz.jpg';
+import xpos from '../../resources/images/brudslojan/posx.jpg';
+import xneg from '../../resources/images/brudslojan/negx.jpg';
+import ypos from '../../resources/images/brudslojan/posy.jpg';
+import yneg from '../../resources/images/brudslojan/negy.jpg';
+import zpos from '../../resources/images/brudslojan/posz.jpg';
+import zneg from '../../resources/images/brudslojan/negz.jpg';
 
 import matallo from '../../resources/images/matallo.jpg';
 import bmp from '../../resources/images/matallo_bmp.jpg';
