@@ -11,8 +11,9 @@ import yneg from '../../resources/images/brudslojan/negy.jpg';
 import zpos from '../../resources/images/brudslojan/posz.jpg';
 import zneg from '../../resources/images/brudslojan/negz.jpg';
 
-// import grass from '../../resources/images/grate_t.png';
+// import grass from '../../resources/images/grateframe.png';
 // import bmps from '../../resources/images/grate_bmp.jpg';
+import rock from '../../resources/images/6920.jpg';
 import grass from '../../resources/images/grass02.jpg';
 import bmps from '../../resources/images/grassBmp.jpg';
 import stone from '../../resources/images/stone.jpg';
@@ -67,11 +68,11 @@ export default class Render {
       z: -1.0
     };
     this.levelMap = [
-      0.32,
-      0.16,
-      0.9,
-      0.6,
-      0.3
+      1.96,
+      1.42,
+      1.12,
+      0.96,
+      0.42
       // 0.46,
       // 0.06,
       // -0.36,
@@ -212,16 +213,17 @@ export default class Render {
     let texture = texloader.load(grass, () => {
       texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
     });
-  
+
     let bmpMap = texloader.load(bmps, () => {
       bmpMap.wrapS = bmpMap.wrapT = THREE.RepeatWrapping;
+      texture.repeat.x = 4;
+      texture.repeat.y = 1;
     });
 
     this.grassMaterial = new THREE.MeshPhongMaterial({
       map: texture,
       bumpMap: bmpMap,
-      transparent: true,
-      bumpScale: 0.95,
+      bumpScale: 0.8,
     });
 
     texture = texloader.load(stone, () => {
@@ -239,6 +241,14 @@ export default class Render {
       bumpScale: 0.95,
     });
 
+    texture = texloader.load(rock, () => {
+      texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+    });
+
+    this.rockMaterial = new THREE.MeshPhongMaterial({
+      map: texture
+    });
+
     let mve = 0;
     for (let v = 0; v < 1; v += 1) {
 
@@ -253,48 +263,97 @@ export default class Render {
         const y = ~~((d - x) / this.maze.cc);
         let z = mve;
         if (blob.mazeReturn[d] !== 1) {
-          this.drawCube({ x, y, z }, false);
+          this.drawCube({ x, y, z });
         } else {
           z += 0.1;
-          this.drawCube({ x, y, z }, true);
+          this.drawBlock({ x, y, z }, true);
         }
       }
       mve += this.size * 2;
     }
   };
 
-  drawCube = (point, type) => {
+  drawCube = (point) => {
     const size = this.size;
-
-
     const object = new THREE.Mesh(
       new THREE.CubeGeometry(
         size,
         size,
         size
       ),
-      type ? this.grassMaterial : this.stoneMaterial,
+      this.stoneMaterial,
     );
+
     object.position.set(
-      this.xOffset + point.x * size,
-      -0.15 + point.z,
-      this.yOffset + point.y * size
+      this.xOffset + point.x * this.size,
+      point.z,
+      this.yOffset + point.y * this.size
     );
+
+    this.scene.add(object);
+  };
+
+  drawBlock = (point, type) => {
+    const size = this.size;
+    const object = new THREE.Mesh(
+      new THREE.CubeGeometry(
+        size,
+        size,
+        size
+      ),
+      this.metalMaterial,
+    );
+
+    object.position.set(
+      this.xOffset + point.x * this.size,
+      point.z,
+      this.yOffset + point.y * this.size
+    );
+
+    this.scene.add(object);
+
+    this.drawTopper(point, type);
+  };
+
+  drawTopper = (point, type) => {
+    const size = this.size;
+    const object = new THREE.Mesh(
+      new THREE.CylinderGeometry(
+        .0, .1, .2, 12
+      ),
+      this.metalMaterial,
+    );
+
+    object.position.set(
+      this.xOffset + point.x * this.size,
+      0.15 + point.z,
+      this.yOffset + point.y * this.size
+    );
+
     this.scene.add(object);
   };
 
   cameraLoop = () => {
-    this.camPosition.x = this.camPosition.x - (this.camPosition.x - this.trsPosition.x) * 0.03;
+    this.camPosition.x = this.camPosition.x - (this.camPosition.x - this.trsPosition.x) * 0.003;
     this.camPosition.y = this.camPosition.y - (this.camPosition.y - this.trsPosition.y) * 0.01;
-    this.camPosition.z = this.camPosition.z - (this.camPosition.z - this.trsPosition.z) * 0.05;
+    this.camPosition.z = this.camPosition.z - (this.camPosition.z - this.trsPosition.z) * 0.005;
     this.camera.position.set(
       this.camPosition.x,
       this.camPosition.y,
       this.camPosition.z
     );
-    this.camera.lookAt(new THREE.Vector3(0, 0, 0));
-
-    if(!this.camTimeoutx && Math.random() * 255 > 213) {
+    // this.camera.lookAt(new THREE.Vector3(0, 0, 0));
+    const speed = this.frames * 0.8;
+    const tx = .15 * Math.sin(speed * Math.PI / 180);
+    const ty = .15 * Math.cos(speed * Math.PI / 180);
+    this.camera.lookAt(
+      new THREE.Vector3(
+        this.camPosition.x + tx,
+        0,
+        0 // this.camPosition.z + ty
+      )
+    );
+    if(!this.camTimeoutx && Math.random() * 255 > 253) {
       this.trsPosition.x = this.xOffset - Math.random() * (this.xOffset * 2);
       console.log(this.trsPosition.x);
       this.camTimeoutx = true;
@@ -303,7 +362,7 @@ export default class Render {
         3000
       );
     }
-    if(!this.camTimeouty && Math.random() * 255 > 254) {
+    if(!this.camTimeouty && Math.random() * 255 > 252) {
       const level = Math.floor(Math.random() * 5);
       console.log(level);
       this.trsPosition.y = this.levelMap[level];
@@ -323,10 +382,6 @@ export default class Render {
     }
   };
 
-  cameraRange = () => {
-    return (2.5 - Math.random() * 5);
-  };
-
   renderScene = () => {
     // Core three Render call //
     // this.composer.render();
@@ -334,14 +389,9 @@ export default class Render {
   };
 
   renderLoop = () => {
-    if (this.frames % 1 === 0) {
-      // some function here for throttling
-    }
-
     this.renderScene();
     this.cameraLoop();
     this.frames += 0.5;
-
     window.requestAnimationFrame(this.renderLoop.bind(this));
   };
 }
