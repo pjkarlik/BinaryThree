@@ -6,7 +6,7 @@ THREE.RenderFragment = {
   		"tSize":    { value: new THREE.Vector2( 256, 256 ) },
   		"center":   { value: new THREE.Vector2( 0.5, 0.5 ) },
   		"angle":    { value: 1.57 },
-  		"scale":    { value: 1.0 }
+  		"scale":    { value: 5.0 }
 
   	},
 
@@ -41,7 +41,7 @@ THREE.RenderFragment = {
   			"vec2 tex = vUv * tSize - center;",
   			"vec2 point = vec2( c * tex.x - s * q.y, s * tex.x + c * q.x ) * scale;",
 
-  			"return ( sin( point.x ) * sin( point.y ) ) * 4.0;",
+  			"return ( sin( point.x ) * sin( point.y ) ) * 2.0;",
 
   		"}",
 
@@ -52,9 +52,9 @@ THREE.RenderFragment = {
   			"float average = ( color.r + color.g + color.b ) / 3.0;",
 				//"gl_FragColor = vec4( vec3( average * 10.0 - 5.0 + pattern() ), color.a );",
   			"gl_FragColor = vec4(",
-					"color.r * 12.0 - 5.0 - pattern(), ",
-					"color.g * 8.0 - 5.0 - pattern(), ",
-					"color.b * 6.0 - 5.0 - pattern(), ",
+					"color.r * 10.0 - 4.0 - pattern(), ",
+					"color.g * 8.0 - 3.0 - pattern(), ",
+					"color.b * 6.0 - 2.0 - pattern(), ",
 					//"average - (255.0 * cos(average + 6.0 * q.x)) / 2.0,",
 					// "(255.0 * sin(average * q.x * 3.125 / 180.0)),",
 					// "(255.0 * sin(average * q.x * 3.125 / 180.0)),",

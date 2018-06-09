@@ -31,8 +31,8 @@ THREE.RenderFragment = {
       "vec2 q = vUv;",
       "vec2 uv;",
 
-      "float val = ( sin( distance(q.x, q.y, 0.5, 0.5) / 0.5 ) ) * 0.8;",
-        // "+ sin(distance(q.x, q.y, 64.0, 64.0) / 8.0)",
+      "float val = sin( distance(q.x, q.y, 0.5, 0.5) / 0.5 )",
+        "+ cos(distance(q.x, q.y, 64.0, 64.0) / 8.0) * 0.2;",
         // "+ sin(distance(q.x, q.y + frames / 7.0, 192.0, 64.0) / 7.0)",
         // "+ sin(distance(q.x, q.y, 192.0, 100.0) / 8) * 0.1;",
 
