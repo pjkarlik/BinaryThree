@@ -25,7 +25,7 @@ Then open a browser to http://localhost:2020
 
 ## Use of Three.js
 
-Three.js is imported and added into a global namespace which allows the use of their other example and developed add ones when included into one of the ```src\Three.js``` files. If you wish to add or edit any of the Three's dependencies or controlls you should do it from this location.
+Three.js is imported and added into a global namespace which allows the use of their example and addon scrips like OrbitControls or shaders. If you wish to add or edit any of the Three's dependencies or controlls you should do it from the ```src\Three.js``` file. 
 
   ```
   import * as THREE from 'three'; // build/three.js from node_module/three
