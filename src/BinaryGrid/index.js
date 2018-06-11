@@ -1,6 +1,3 @@
-// require('../shaders/BWPhaseFragment');
-//require('./shaders/WaveBowFragment');
-import dat from 'dat-gui';
 import THREE from '../ThreeLight';
 import BinaryMaze from '../utils/BinaryMaze';
 // Skybox image imports //
@@ -69,7 +66,6 @@ export default class Render {
       console.log(this.camera.position);
     }, true);
     this.init();
-    // this.createGUI();
     this.createScene();
     this.renderLoop();
   }
@@ -79,39 +75,6 @@ export default class Render {
     this.height = window.innerHeight;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(this.width, this.height);
-  };
-
-  createGUI = () => {
-    this.options = {
-      scale: this.scale,
-      ratio: this.ratio,
-      mirror: this.mirror
-    };
-    this.gui = new dat.GUI();
-
-    const folderRender = this.gui.addFolder('Render Options');
-    folderRender.add(this.options, 'mirror', 0, 4).step(1)
-      .onFinishChange((value) => {
-        this.mirror = value;
-        this.setOptions();
-      });
-    folderRender.add(this.options, 'scale', 1, 100).step(0.1)
-      .onFinishChange((value) => {
-        this.scale = value * 1.0;
-        this.setOptions();
-      });
-    folderRender.add(this.options, 'ratio', 512, 1024).step(1)
-      .onFinishChange((value) => {
-        this.ratio = value * 1.0;
-        this.setOptions();
-      });
-    // folderRender.open();
-  };
-
-  setOptions() {
-    this.effect.uniforms.side.value = this.mirror;
-    this.rfrag.uniforms.scale.value = this.scale;
-    this.rfrag.uniforms.ratio.value = this.ratio;
   };
 
   init = () => {
