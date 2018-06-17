@@ -107,10 +107,10 @@ export default class Render {
     // this.scene.fog = new THREE.FogExp2(this.background, 0.55);
   
     this.camera = new THREE.PerspectiveCamera(
-        this.cameraConfig.viewAngle,
-        this.cameraConfig.aspect,
-        this.cameraConfig.near,
-        this.cameraConfig.far
+      this.cameraConfig.viewAngle,
+      this.cameraConfig.aspect,
+      this.cameraConfig.near,
+      this.cameraConfig.far
     );
 
     this.camera.position.set(...this.cameraConfig.position);
