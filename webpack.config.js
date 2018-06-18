@@ -25,8 +25,8 @@ const config = {
   devtool: 'source-map',
   output: {
     path: path.join(__dirname, 'dist/'),
-    filename: `[name].js`,
-    chunkFilename: `[id].js`,
+    filename: '[name].js',
+    chunkFilename: '[id].js',
     libraryTarget: 'umd'
   },
   entry: {
@@ -40,7 +40,7 @@ const config = {
       {
         test: /\.(js|jsx)$/,
         include: [
-          /src/
+          /src/, /resources/
         ],
         use: [
           {
@@ -58,53 +58,57 @@ const config = {
           'css-loader'
         ]
       },
+      // LESS loading if required
+      // {
+      //   test: /\.less$/,
+      //   use: ExtractTextPlugin.extract({
+      //     fallback: 'style-loader',
+      //     use: [
+      //       {
+      //         loader: 'css-loader',
+      //         options: {
+      //           modules: true,
+      //           importLoaders: 1,
+      //           localIdentName: '[name]__[local]___[hash:base64:5]'
+      //         }
+      //       },
+      //       {
+      //         loader: 'postcss-loader',
+      //         options: {
+      //           plugins: () => [AutoPrefixer]
+      //         }
+      //       },
+      //       'less-loader'
+      //     ],
+      //     publicPath: '../'
+      //   })
+      // },
+      // Image loading if required
       {
-        test: /\.less$/,
-        use: ExtractTextPlugin.extract({
-          fallback: 'style-loader',
-          use: [
-            {
-              loader: 'css-loader',
-              options: {
-                modules: true,
-                importLoaders: 1,
-                localIdentName: '[name]__[local]___[hash:base64:5]'
-              }
-            },
-            {
-              loader: 'postcss-loader',
-              options: {
-                plugins: () => [AutoPrefixer]
-              }
-            },
-            'less-loader'
-          ],
-          publicPath: '../'
-        })
-      },
-      {
-        test: /\.(png|gif|cur|jpg|jpeg)$/,
+        test: /\.(png|gif|cur|jpg)$/,
         use: [
           {
             loader: 'file-loader',
             options: {
               name: 'images/[name]__[hash:base64:5].[ext]'
             }
-          },
-          {
-            loader: 'image-webpack-loader',
-            options: {
-              bypassOnDebug: true,
-              optipng: {
-                optimizationLevel: 7
-              },
-              gifsicle: {
-                interlaced: false
-              }
-            }
           }
+          //,
+          // {
+          //   loader: 'image-webpack-loader',
+          //   options: {
+          //     bypassOnDebug: true,
+          //     optipng: {
+          //       optimizationLevel: 7
+          //     },
+          //     gifsicle: {
+          //       interlaced: false
+          //     }
+          //   }
+          // }
         ]
       },
+      // Font loading if required
       // {
       //   test: /\.(woff2|woff|eot|ttf|svg)$/,
       //   use: [
@@ -132,12 +136,12 @@ const config = {
   },
   plugins: [
     new ExtractTextPlugin({
-      filename: `style/[name].[contenthash].css`,
+      filename: 'styles/[name].[contenthash].css',
       allChunks: true
     }),
     new HtmlWebpackPlugin({
       css: 'styles/styles.css',
-      title: 'PJK | BinaryThree',
+      title: 'BinaryThree',
       favicon: './resources/images/favicon.png',
       template: './resources/templates/template.ejs',
       inject: 'body',
