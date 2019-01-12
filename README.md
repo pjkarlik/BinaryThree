@@ -1,7 +1,7 @@
 ###
 ![travis ci build](https://travis-ci.org/pjkarlik/BinaryThree.svg?branch=master)
 # BinaryThree
-![version](https://img.shields.io/badge/version-0.1.0-e05d44.svg?style=flat-square) ![threejs](https://img.shields.io/badge/threejs-0.93.0-e09844.svg?style=flat-square) ![webpack](https://img.shields.io/badge/webpack-3.0-bdaa28.svg?style=flat-square)  ![WebGL](https://img.shields.io/badge/webgl-GLSL-blue.svg?style=flat-square)
+![version](https://img.shields.io/badge/version-0.2.0-e05d44.svg?style=flat-square) ![threejs](https://img.shields.io/badge/threejs-0.100.0-e09844.svg?style=flat-square) ![webpack](https://img.shields.io/badge/webpack-4.12.1-51b1c5.svg?style=flat-square)  ![WebGL](https://img.shields.io/badge/webgl-GLSL-blue.svg?style=flat-square)
 
 ![BinaryThree](./splash.png)
 
