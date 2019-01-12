@@ -15,7 +15,7 @@ export default class Render {
     this.mirror = 4;
     this.scale = 1.0;
     this.ratio = 1024;
-    this.size = 0.2;
+    this.size = 0.15;
     this.maze = new BinaryMaze();
     this.width = window.innerWidth;
     this.height = window.innerHeight;
@@ -88,10 +88,10 @@ export default class Render {
     this.scene.fog = new THREE.FogExp2(0x000000, 0.275);
   
     this.camera = new THREE.PerspectiveCamera(
-        this.cameraConfig.viewAngle,
-        this.cameraConfig.aspect,
-        this.cameraConfig.near,
-        this.cameraConfig.far
+      this.cameraConfig.viewAngle,
+      this.cameraConfig.aspect,
+      this.cameraConfig.near,
+      this.cameraConfig.far
     );
 
     this.camera.position.set(...this.cameraConfig.position);
@@ -163,9 +163,9 @@ export default class Render {
 
     const object = new THREE.Mesh(
       new THREE.CubeGeometry(
-        size,
-        size,
-        size
+        size - 0.01,
+        size - 0.01,
+        size - 0.01
       ),
       this.metalMaterial,
     );
