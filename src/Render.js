@@ -1,6 +1,6 @@
 require('./shaders/BWPhaseFragment');
 //require('./shaders/WaveBowFragment');
-import dat from 'dat-gui';
+import dat from 'dat.gui';
 import THREE from './ThreeLight';
 
 // Skybox image imports //

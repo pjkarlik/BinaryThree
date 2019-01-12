@@ -1,4 +1,4 @@
-import dat from 'dat-gui';
+import dat from 'dat.gui';
 import THREE from '../ThreeLight';
 import BinaryMaze from '../utils/BinaryCube';
 // Skybox image imports //

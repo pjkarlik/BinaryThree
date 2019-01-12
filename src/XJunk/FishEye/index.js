@@ -1,6 +1,6 @@
 // require('../shaders/ColorRasterFragment');
 require('../shaders/FishEyeFragment.js');
-import dat from 'dat-gui';
+import dat from 'dat.gui';
 import THREE from '../ThreeLight';
 
 // Skybox image imports //
