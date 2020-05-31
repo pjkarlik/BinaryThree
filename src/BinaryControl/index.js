@@ -1,9 +1,9 @@
-import dat from 'dat.gui';
-import THREE from '../Three';
-import BinaryMaze from '../utils/BinaryMaze';
+import dat from "dat.gui";
+import THREE from "../Three";
+import BinaryMaze from "../utils/BinaryMaze";
 
-import stone from '../../resources/images/matallo.jpg';
-import bmp from '../../resources/images/matallo_bmp.jpg';
+import stone from "../../resources/images/matallo.jpg";
+import bmp from "../../resources/images/matallo_bmp.jpg";
 
 // Render Class Object //
 export default class Render {
@@ -13,7 +13,7 @@ export default class Render {
     this.scale = 1.0;
     this.ratio = 1024;
     this.size = 0.2;
-    this.clock =  new THREE.Clock(true);
+    this.clock = new THREE.Clock(true);
     this.maze = new BinaryMaze();
     this.width = window.innerWidth;
     this.height = window.innerHeight;
@@ -21,20 +21,16 @@ export default class Render {
     this.background = 0x000000;
     // Configurations //
     this.cameraConfig = {
-      position: [
-        -0.5,
-        0.5,
-        -1.0
-      ],
+      position: [-0.5, 0.5, -1.0],
       lookAt: [0, 1, 2],
       aspect: this.width / this.height,
       viewAngle: 85,
       near: 0.08,
-      far: 20000
+      far: 20000,
     };
     this.controlConfig = {
       max: 1500,
-      min: 0
+      min: 0,
     };
     this.amount = 2 + Math.abs(Math.random() * 26);
     this.adef = 360 / this.amount + 1;
@@ -42,32 +38,23 @@ export default class Render {
     this.camPosition = {
       x: -1.5,
       y: 0.06,
-      z: -1.0
+      z: -1.0,
     };
     this.trsPosition = {
       x: -0.5,
       y: this.camPosition.y,
-      z: -1.0
+      z: -1.0,
     };
-    this.levelMap = [
-      1.0,
-      0.46,
-      0.06,
-      -0.36,
-      -0.8
-    ];
+    this.levelMap = [1.0, 0.46, 0.06, -0.36, -0.8];
     this.camTimeoutx = true;
     this.camTimeouty = true;
     this.camTimeoutz = true;
-    setTimeout(
-      () => {
-        this.camTimeoutx = false;
-        this.camTimeouty = false;
-        this.camTimeoutz = false;
-      },
-      1000
-    );
-    window.addEventListener('resize', this.resize, true);
+    setTimeout(() => {
+      this.camTimeoutx = false;
+      this.camTimeouty = false;
+      this.camTimeoutz = false;
+    }, 1000);
+    window.addEventListener("resize", this.resize, true);
     // window.addEventListener('click', () => {
     //   console.log(this.camera.position);
     // }, true);
@@ -89,22 +76,28 @@ export default class Render {
     this.options = {
       scale: this.scale,
       ratio: this.ratio,
-      mirror: this.mirror
+      mirror: this.mirror,
     };
     this.gui = new dat.GUI();
 
-    const folderRender = this.gui.addFolder('Render Options');
-    folderRender.add(this.options, 'mirror', 0, 4).step(1)
+    const folderRender = this.gui.addFolder("Render Options");
+    folderRender
+      .add(this.options, "mirror", 0, 4)
+      .step(1)
       .onFinishChange((value) => {
         this.mirror = value;
         this.setOptions();
       });
-    folderRender.add(this.options, 'scale', 1, 100).step(0.1)
+    folderRender
+      .add(this.options, "scale", 1, 100)
+      .step(0.1)
       .onFinishChange((value) => {
         this.scale = value * 1.0;
         this.setOptions();
       });
-    folderRender.add(this.options, 'ratio', 512, 1024).step(1)
+    folderRender
+      .add(this.options, "ratio", 512, 1024)
+      .step(1)
       .onFinishChange((value) => {
         this.ratio = value * 1.0;
         this.setOptions();
@@ -116,7 +109,7 @@ export default class Render {
     this.effect.uniforms.side.value = this.mirror;
     this.rfrag.uniforms.scale.value = this.scale;
     this.rfrag.uniforms.ratio.value = this.ratio;
-  };
+  }
 
   init = () => {
     // Set Render and Scene //
@@ -140,7 +133,7 @@ export default class Render {
     this.scene.add(this.camera);
 
     // Set AmbientLight //
-    this.ambient = new THREE.AmbientLight(0xFFFFFF);
+    this.ambient = new THREE.AmbientLight(0xffffff);
     this.ambient.position.set(0, 0, 0);
     this.scene.add(this.ambient);
 
@@ -161,7 +154,7 @@ export default class Render {
     const x = (a || 0.0) + (10 - Math.random() * 20);
     const y = (b || 0.0) + (15 - Math.random() * 30);
     const z = (c || 0.0) + (10 - Math.random() * 20);
-    return {x, y, z};
+    return { x, y, z };
   };
 
   getMazeBlob = () => {
@@ -171,7 +164,7 @@ export default class Render {
     return {
       mazeReturn,
       mazeWidth,
-      mazeHeight
+      mazeHeight,
     };
   };
 
@@ -184,13 +177,13 @@ export default class Render {
     // });
     // other material //
     const texloader = new THREE.TextureLoader();
-  
+
     const texture = texloader.load(stone, () => {
       texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
       texture.offset.set(0, 0);
       texture.repeat.set(1, 1);
     });
-  
+
     const bmpMap = texloader.load(bmp, () => {
       bmpMap.wrapS = bmpMap.wrapT = THREE.RepeatWrapping;
       texture.offset.set(0, 0);
@@ -208,7 +201,6 @@ export default class Render {
     // end material //
     let mve = 0;
     for (let v = 0; v < 4; v += 1) {
-
       const blob = this.getMazeBlob();
       this.mazeWidth = blob.mazeWidth;
       this.mazeHeight = blob.mazeHeight;
@@ -230,17 +222,10 @@ export default class Render {
     const xOffset = ~~(0 - this.mazeWidth / 2);
     const yOffset = ~~(0 - this.mazeHeight / 2);
 
-    const geometry = new THREE.BoxGeometry(
-      size,
-      size,
-      size
-    );
+    const geometry = new THREE.BoxBufferGeometry(size, size, size);
 
     // geometry.computeVertexNormals();
-    const object = new THREE.Mesh(
-      geometry,
-      this.boxMaterial,
-    );
+    const object = new THREE.Mesh(geometry, this.boxMaterial);
     object.position.set(
       xOffset + point.x * size,
       -0.15 + point.z,
